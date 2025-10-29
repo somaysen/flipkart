@@ -4,6 +4,7 @@ import Register from '../pages/register'
 import Login from '../pages/login'
 import Forgot from '../pages/Forgot'
 import Logout from '../pages/Logout'
+import Seller from '../seller/Seller'
 
 function Router() {
   return (
@@ -13,6 +14,7 @@ function Router() {
         <Route path="/login" element={<Login />} />
         <Route path="/forgot" element={<Forgot />} />
         <Route path="/logout" element={<Logout />} />
+        <Route path='/user/seller' element={<Seller/>} />
     </Routes>
   )
 }

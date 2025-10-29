@@ -1,23 +1,18 @@
 const ProdectModel = require("../models/prodect.model");
-const sendFilesToStorage = require("../services/storage.service")
-const mongoose = require("mongoose");
+const sendFilesToStorage = require("../services/storage.service");
+const mongoose = require('mongoose')
 
+// Create a Prodect
 
 const prodectCreateController = async (req, res) => {
-   try {
+  try {
     let { title, description, amount, currency } = req.body;
 
-    if (!req.files)
-      return res.status(404).json({
-        message: "Images is required",
-      });
-
-      console.log(req.files)
+    if (!req.files || req.files.length === 0)
+      return res.status(404).json({ message: "Images are required" });
 
     if (!title || !description || !amount || !currency)
-      return res.status(404).json({
-        message: "All fields are required",
-      });
+      return res.status(404).json({ message: "All fields are required" });
 
     let uploadedImgUrl = await Promise.all(
       req.files.map(async (elem) => {
@@ -30,24 +25,22 @@ const prodectCreateController = async (req, res) => {
     let newProduct = await ProdectModel.create({
       title,
       description,
-      price: {
-        amount,
-        currency,
-      },
+      price: { amount, currency },
       images: uploadedImgUrl.map((elem) => elem.url),
     });
 
+    console.log(newProduct)
     return res.status(201).json({
-      message: "product created successfully",
+      message: "Product created successfully",
       product: newProduct,
     });
   } catch (error) {
-    return res.status(500).json({
-      message: "Internal server error",
-      error: error,
-    });
+    return res.status(500).json({ message: "Internal server error", error });
   }
 };
+
+
+// View all prodect
 
 const prodectGetController = async (req, res) => {
   try {
@@ -57,10 +50,7 @@ const prodectGetController = async (req, res) => {
       products,
     });
   } catch (error) {
-    return res.status(500).json({
-      message: "Internal server error",
-      error: error,
-    });
+    return res.status(500).json({ message: "Internal server error", error });
   }
 };
 
@@ -70,20 +60,16 @@ const prodectUpdateController = async (req, res) => {
     let { title, description, amount, currency } = req.body;
 
     if (!prodect_id)
-      return res.status(404).json({
-        message: "Product id is required",
-      });
+      return res.status(404).json({ message: "Product id is required" });
 
     let product = await ProdectModel.findById(prodect_id);
 
     if (!product)
-      return res.status(404).json({
-        message: "Product not found",
-      });
+      return res.status(404).json({ message: "Product not found" });
 
-    let uploadedImg;
+    let uploadedImg = [];
 
-    if (req.files) {
+    if (req.files && req.files.length > 0) {
       uploadedImg = await Promise.all(
         req.files.map(async (elem) => {
           return await sendFilesToStorage(elem.buffer, elem.originalname);
@@ -91,18 +77,19 @@ const prodectUpdateController = async (req, res) => {
       );
     }
 
-    let updatedProduct = await ProductModel.findByIdAndUpdate(
+    let updatedProduct = await ProdectModel.findByIdAndUpdate(
+      prodect_id,
       {
-        _id: product_id,
-      },
-      {
-        title,
-        description,
+        title: title || product.title,
+        description: description || product.description,
         price: {
-          amount,
-          currency,
+          amount: amount || product.price.amount,
+          currency: currency || product.price.currency,
         },
-        images: uploadedImg.map((elem) => elem.url),
+        images:
+          uploadedImg.length > 0
+            ? uploadedImg.map((elem) => elem.url)
+            : product.images,
       },
       { new: true }
     );
@@ -112,47 +99,30 @@ const prodectUpdateController = async (req, res) => {
       product: updatedProduct,
     });
   } catch (error) {
-    return res.status(500).json({
-      message: "Internal server error",
-      error: error,
-    });
+    return res.status(500).json({ message: "Internal server error", error });
   }
 };
-
 
 const prodectDeleteController = async (req, res) => {
   try {
-    
     const prodect_id = req.params._id;
 
-    if (!prodect_id) {
-      return res.status(404).json({
-        message: "Product id is required",
-      });
-    }
+    if (!prodect_id)
+      return res.status(404).json({ message: "Product id is required" });
 
     const delProdect = await ProdectModel.findByIdAndDelete(prodect_id);
 
-    if (!delProdect) {
-      return res.status(404).json({
-        message: "Product not found",
-      });
-    }
-      
-      return res.status(200).json({
-        message: "Product deleted successfully",
-        product: delProdect,
-      });
+    if (!delProdect)
+      return res.status(404).json({ message: "Product not found" });
 
-  } catch (error) {
-    console.log("Error in prodectDeleteController:", error);
-    return res.status(500).json({
-      message: "Internal server error",
-      error: error,
+    return res.status(200).json({
+      message: "Product deleted successfully",
+      product: delProdect,
     });
+  } catch (error) {
+    return res.status(500).json({ message: "Internal server error", error });
   }
 };
-
 
 module.exports = {
   prodectCreateController,
