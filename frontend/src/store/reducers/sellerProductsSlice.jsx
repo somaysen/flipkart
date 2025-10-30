@@ -1,24 +1,6 @@
 // src/store/reducers/sellerProductsSlice.js
-import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
-import axios from "axios";
-
-// 🔹 Fetch all products for the logged-in seller
-export const fetchSellerProducts = createAsyncThunk(
-  "sellerProducts/fetchSellerProducts",
-  async (_, { rejectWithValue }) => {
-    try {
-      const token = localStorage.getItem("sellerToken");
-      const res = await axios.get("/api/seller/products", {
-        headers: { Authorization: `Bearer ${token}` },
-      });
-      return res.data.products;
-    } catch (error) {
-      return rejectWithValue(
-        error.response?.data?.message || "Failed to fetch seller products"
-      );
-    }
-  }
-);
+import { createSlice } from "@reduxjs/toolkit";
+import { fetchSellerProducts, createSellerProduct, updateSellerProduct } from "../actons/productActions";
 
 const sellerProductsSlice = createSlice({
   name: "sellerProducts",
@@ -41,6 +23,13 @@ const sellerProductsSlice = createSlice({
       .addCase(fetchSellerProducts.rejected, (state, action) => {
         state.loading = false;
         state.error = action.payload;
+      })
+      .addCase(createSellerProduct.fulfilled, (state, action) => {
+        state.products.unshift(action.payload);
+      })
+      .addCase(updateSellerProduct.fulfilled, (state, action) => {
+        const idx = state.products.findIndex(p => p._id === action.payload._id);
+        if (idx !== -1) state.products[idx] = action.payload;
       });
   },
 });

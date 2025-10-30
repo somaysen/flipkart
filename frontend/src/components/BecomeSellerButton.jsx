@@ -3,13 +3,13 @@ import { useNavigate } from "react-router-dom";
 
 function BecomeSellerButton({ closeMenu }) {
   const navigate = useNavigate();
-  const { seller } = useSelector((state) => state.seller); // from sellerSlice
+  const { token } = useSelector((state) => state.seller || {});
 
   const handleClick = () => {
-    if (seller) {
-      navigate("/seller/products"); // seller logged in → go to product page
+    if (token) {
+      navigate("/seller/dashboard");
     } else {
-      navigate("/seller/login"); // not logged in → go to login page
+      navigate("/seller/login");
     }
     closeMenu && closeMenu();
   };

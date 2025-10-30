@@ -1,72 +1,53 @@
-// should use the Seller model
+// middleware/sellerAuth.js
+const jwt = require("jsonwebtoken");
 const sellerModel = require("../models/seller.model");
 const cacheInstance = require("../services/cache.service");
-const jwt = require("jsonwebtoken");
 
-const sellerMiddewar = async (req, res, next) => {
-  
+// Helper: Extract token from "Authorization" header
+const extractBearerToken = (req) => {
+  const authHeader = req.headers?.authorization || req.headers?.Authorization;
+  if (authHeader && typeof authHeader === "string" && authHeader.startsWith("Bearer ")) {
+    return authHeader.slice(7);
+  }
+  return null;
+};
+
+// Main Seller Auth Middleware
+const sellerAuth = async (req, res, next) => {
   try {
-    let token = req.cookies.token;
-    if (!token)
-      return res.status(404).json({
-        message: "Token not found",
-      });
-
-    let isBlacklisted = await cacheInstance.get(token);
-
-    if (isBlacklisted)
-      return res.status(400).json({
-        message: "Token blacklisted",
-      });
-
-    let decode = await jwt.verify(token, process.env.JWT_SECRET);
-
-    let user = await sellerModel.findById(decode.id);
-
-    if (!user) {
-      return res.status(404).json({ message: "User not found" });
+    // Get token from header or cookies
+    const token = extractBearerToken(req) || req.cookies?.token;
+    if (!token) {
+      return res.status(401).json({ message: "Token not found" });
     }
 
-    req.user = user;
+    // Check if token is blacklisted
+    const isBlacklisted = await cacheInstance.get(token);
+    if (isBlacklisted) {
+      return res.status(401).json({ message: "Token blacklisted" });
+    }
+
+    // Verify token
+    const decoded = jwt.verify(
+      token,
+      process.env.JWT_SECRET_SELLER || process.env.JWT_SECRET
+    );
+
+    // Find seller by ID
+    const seller = await sellerModel.findById(decoded.id);
+    if (!seller) {
+      return res.status(404).json({ message: "Seller not found" });
+    }
+
+    // Attach seller to request
+    req.seller = seller;
+    req.user = seller; // for backward compatibility
+
     next();
   } catch (error) {
-    console.log("Error in middleware", error);
+    console.error("Error in sellerAuth middleware:", error);
+    return res.status(401).json({ message: "Invalid or expired token" });
   }
 };
 
-const sellerValid = async (req, res, next) => {
-  
-  try {
-    let token = req.cookies.token;
-    if (!token)
-      return res.status(404).json({
-        message: "Token not found",
-      });
-
-    let isBlacklisted = await cacheInstance.get(token);
-
-    if (isBlacklisted)
-      return res.status(400).json({
-        message: "Token blacklisted",
-      });
-
-    let decode = await jwt.verify(token, process.env.JWT_SECRET_seller);
-
-    let user = await sellerModel.findById(decode.id);
-
-    console.log(user);
-    if (!user) {
-      return res.status(404).json({ message: "seller not found" });
-    }
-
-    req.user = user;
-    next();
-  } catch (error) {
-    console.log("Error in middleware", error);
-  }
-};
-
-
-
-
-module.exports = {sellerMiddewar,sellerValid};
+module.exports = sellerAuth;

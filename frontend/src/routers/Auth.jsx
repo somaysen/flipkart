@@ -3,9 +3,9 @@ import { useSelector } from "react-redux";
 import { Navigate } from "react-router-dom";
 
 const AuthRoute = ({ children }) => {
-  const { user } = useSelector((state) => state.userReducer || {});
+  const { isAuthenticated } = useSelector((state) => state.user || {});
 
-  return user ? children : <Navigate to="/login" replace />;
+  return isAuthenticated ? children : <Navigate to="/login" replace />;
 };
 
 export default AuthRoute;

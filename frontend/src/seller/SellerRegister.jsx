@@ -1,11 +1,11 @@
 import React, { useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { registerSeller } from "../store/actons/sellerAction";
+import { Link } from "react-router-dom";
 
-function SellerRegister({ onSwitch }) {
+function SellerRegister() {
   const dispatch = useDispatch();
   const { loading, error, success } = useSelector((state) => state.seller);
-
   const [form, setForm] = useState({
     name: "",
     contactName: "",
@@ -24,89 +24,53 @@ function SellerRegister({ onSwitch }) {
   };
 
   return (
-    <div className="w-full max-w-md bg-white shadow p-6 rounded-2xl">
-      <h2 className="text-2xl font-semibold mb-4 text-center">
-        Seller Registration
-      </h2>
+    <div className="min-h-screen flex justify-center items-center bg-gray-50">
+      <div className="w-full max-w-md bg-white shadow-xl p-8 rounded-2xl">
+        <h2 className="text-2xl font-bold mb-6 text-center">Seller Register</h2>
 
-      <form onSubmit={handleSubmit} className="space-y-3">
-        {error && <p className="text-red-600 text-sm">{error}</p>}
-        {success && (
-          <p className="text-green-600 text-sm">
-            Registration successful! You can now login.
-          </p>
-        )}
+        <form onSubmit={handleSubmit} className="space-y-3">
+          {Object.keys(form).map((key) => (
+            <input
+              key={key}
+              name={key}
+              placeholder={key.charAt(0).toUpperCase() + key.slice(1)}
+              value={form[key]}
+              onChange={handleChange}
+              type={key === "password" ? "password" : "text"}
+              className="w-full p-3 border rounded"
+            />
+          ))}
 
-        <input
-          name="name"
-          placeholder="Business Name"
-          value={form.name}
-          onChange={handleChange}
-          className="w-full p-2 border rounded"
-          required
-        />
-        <input
-          name="contactName"
-          placeholder="Contact Person"
-          value={form.contactName}
-          onChange={handleChange}
-          className="w-full p-2 border rounded"
-          required
-        />
-        <input
-          name="phone"
-          placeholder="Phone"
-          value={form.phone}
-          onChange={handleChange}
-          className="w-full p-2 border rounded"
-          required
-        />
-        <input
-          type="email"
-          name="email"
-          placeholder="Email"
-          value={form.email}
-          onChange={handleChange}
-          className="w-full p-2 border rounded"
-          required
-        />
-        <input
-          type="password"
-          name="password"
-          placeholder="Password"
-          value={form.password}
-          onChange={handleChange}
-          className="w-full p-2 border rounded"
-          required
-        />
-        <textarea
-          name="address"
-          placeholder="Business Address"
-          value={form.address}
-          onChange={handleChange}
-          className="w-full p-2 border rounded"
-          rows="2"
-          required
-        ></textarea>
+          {error && <p className="text-red-500 text-sm">{error}</p>}
+          {success && (
+            <p className="text-green-600 text-sm">
+              Registration successful! Please login.
+            </p>
+          )}
 
-        <button
-          type="submit"
-          disabled={loading}
-          className="w-full bg-green-600 text-white p-2 rounded hover:bg-green-700 disabled:opacity-50"
-        >
-          {loading ? "Registering..." : "Register"}
-        </button>
-      </form>
+          <button
+            type="submit"
+            disabled={loading}
+            className={`w-full p-3 rounded text-white ${
+              loading
+                ? "bg-green-400 cursor-not-allowed"
+                : "bg-green-600 hover:bg-green-700"
+            }`}
+          >
+            {loading ? "Registering..." : "Register"}
+          </button>
+        </form>
 
-      <p className="text-center mt-4 text-sm text-gray-600">
-        Already have an account?{" "}
-        <button
-          onClick={onSwitch}
-          className="text-blue-600 hover:underline font-medium"
-        >
-          Login here
-        </button>
-      </p>
+        <p className="text-center mt-4 text-sm text-gray-600">
+          Already have an account?{" "}
+          <Link
+            to="/seller/login"
+            className="text-blue-600 hover:underline font-medium"
+          >
+            Login
+          </Link>
+        </p>
+      </div>
     </div>
   );
 }

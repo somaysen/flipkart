@@ -3,14 +3,12 @@ import { useSelector } from "react-redux";
 import { Navigate } from "react-router-dom";
 
 const UnAuthRoute = ({ children }) => {
-  const user = useSelector((state) => state.userReducer?.user);
+  const { isAuthenticated } = useSelector((state) => state.user || {});
 
-  // If user is logged in → redirect to home
-  if (user) {
+  if (isAuthenticated) {
     return <Navigate to="/" replace />;
   }
 
-  // If not logged in → allow access to the route
   return children;
 };
 

@@ -45,8 +45,6 @@ const prodectCreateController = async (req, res) => {
   }
 };
 
-
-
 // View all prodect
 
 const prodectGetController = async (req, res) => {
@@ -54,6 +52,22 @@ const prodectGetController = async (req, res) => {
     let products = await ProdectModel.find();
     return res.status(200).json({
       message: "Products fetched successfully",
+      products,
+    });
+  } catch (error) {
+    return res.status(500).json({ message: "Internal server error", error });
+  }
+};
+
+// View products for authenticated seller
+const prodectGetForSellerController = async (req, res) => {
+  try {
+    const user_id = req.seller?._id || req.user?._id;
+    if (!user_id) return res.status(401).json({ message: "Unauthorized" });
+
+    const products = await ProdectModel.find({ user_id });
+    return res.status(200).json({
+      message: "Seller products fetched successfully",
       products,
     });
   } catch (error) {
@@ -134,6 +148,7 @@ const prodectDeleteController = async (req, res) => {
 module.exports = {
   prodectCreateController,
   prodectGetController,
+  prodectGetForSellerController,
   prodectUpdateController,
   prodectDeleteController,
 };

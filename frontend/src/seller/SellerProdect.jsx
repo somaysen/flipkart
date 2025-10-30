@@ -1,80 +1,73 @@
 import React, { useEffect } from "react";
+import { Link, useNavigate } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
-import { fetchSellerProducts } from "../store/actons/sellerAction"; // ✅ fixed path
-import { Loader2, Package, AlertCircle } from "lucide-react";
+import { logoutSeller } from "../store/reducers/sellerSlice";
+import { fetchSellerProducts } from "../store/actons/productActions";
+import SellerLogout from "./SellerLogout";
 
-function SellerProducts() {
+function SellerDashboard() {
   const dispatch = useDispatch();
-  const { products = [], loading, error } = useSelector(
-    (state) => state.sellerProducts
-  );
+  const navigate = useNavigate();
+  const { products, loading, error } = useSelector((s) => s.sellerProducts);
 
   useEffect(() => {
     dispatch(fetchSellerProducts());
   }, [dispatch]);
 
   return (
-    <div className="w-full max-w-6xl mx-auto bg-white shadow-lg p-6 rounded-2xl mt-6">
-      <h2 className="text-3xl font-bold mb-6 text-gray-800 border-b pb-3">
-        Your Products
-      </h2>
+    <div className="min-h-screen bg-gray-50 p-6">
+      <div className="flex justify-between items-center mb-6">
+        <h1 className="text-3xl font-bold">Seller Dashboard</h1>
+        <SellerLogout />
+      </div>
 
-      {/* Loading */}
-      {loading && (
-        <div className="flex justify-center py-10">
-          <Loader2 className="animate-spin text-gray-500 w-8 h-8" />
-        </div>
-      )}
+      <div className="grid sm:grid-cols-2 gap-6 mb-8">
+        <Link
+          to="/seller/add-product"
+          className="bg-blue-600 text-white p-6 rounded-lg text-center shadow hover:bg-blue-700"
+        >
+          ➕ Add Product
+        </Link>
 
-      {/* Error */}
-      {error && (
-        <div className="flex items-center justify-center text-red-600 py-10">
-          <AlertCircle className="w-5 h-5 mr-2" />
-          {error}
-        </div>
-      )}
+        <Link
+          to="/seller/products"
+          className="bg-green-600 text-white p-6 rounded-lg text-center shadow hover:bg-green-700"
+        >
+          📦 View My Products
+        </Link>
+      </div>
 
-      {/* Empty */}
-      {!loading && !error && products.length === 0 && (
-        <div className="text-gray-500 text-center py-10">
-          <Package className="w-8 h-8 mx-auto mb-3" />
-          No products yet. Add some to see them here.
-        </div>
-      )}
-
-      {/* Product Grid */}
-      {!loading && products.length > 0 && (
-        <div className="grid gap-6 grid-cols-1 sm:grid-cols-2 md:grid-cols-3">
-          {products.map((product) => (
-            <div
-              key={product._id || product.title}
-              className="border rounded-2xl overflow-hidden shadow hover:shadow-xl transition-all duration-300"
-            >
-              <img
-                src={
-                  product.images?.[0] ||
-                  "https://via.placeholder.com/300x200?text=No+Image"
-                }
-                alt={product.title}
-                className="w-full h-48 object-cover"
-              />
-              <div className="p-4">
-                <h3 className="text-lg font-semibold text-gray-800 mb-1">
-                  {product.title}
-                </h3>
-                <p className="text-gray-500 text-sm mb-3 line-clamp-2">
-                  {product.description}
-                </p>
-                <p className="font-semibold text-indigo-600">
-                  {product.currency} {product.amount}
-                </p>
+      <div className="bg-white rounded-lg shadow p-4">
+        <h2 className="text-xl font-semibold mb-4">My Products</h2>
+        {loading && <p>Loading...</p>}
+        {error && <p className="text-red-600">{String(error)}</p>}
+        {!loading && products?.length === 0 && (
+          <p>No products yet. Create your first one!</p>
+        )}
+        <ul className="divide-y">
+          {products?.map((p) => (
+            <li key={p._id} className="py-3 flex items-center justify-between">
+              <div className="flex items-center gap-3">
+                {p.images?.[0] && (
+                  <img src={p.images[0]} alt={p.title} className="w-12 h-12 rounded object-cover border" />
+                )}
+                <div>
+                  <div className="font-medium">{p.title}</div>
+                  <div className="text-sm text-gray-600">₹{p.price?.amount} {p.price?.currency}</div>
+                </div>
               </div>
-            </div>
+              <button
+                onClick={() => navigate(`/seller/products/${p._id}/edit`)}
+                className="px-3 py-1 text-sm bg-indigo-600 text-white rounded"
+              >
+                Edit
+              </button>
+            </li>
           ))}
-        </div>
-      )}
+        </ul>
+      </div>
     </div>
   );
 }
 
-export default SellerProducts;
+export default SellerDashboard;

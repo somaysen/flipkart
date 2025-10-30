@@ -1,9 +1,12 @@
 import { createSlice } from "@reduxjs/toolkit";
-import { loginUser, registerUser } from "../actons/userActions";
+import { loginUser, registerUser, logoutUser } from "../actons/userActions";
+
+const storedUserJson = localStorage.getItem("user");
+const storedUser = storedUserJson ? JSON.parse(storedUserJson) : null;
 
 const initialState = {
-  user: null,
-  isAuthenticated: false,
+  user: storedUser,
+  isAuthenticated: !!storedUser,
   loading: false,
   error: null,
 };
@@ -15,6 +18,7 @@ const userSlice = createSlice({
     logout: (state) => {
       state.user = null;
       state.isAuthenticated = false;
+      localStorage.removeItem("user");
     },
   },
   extraReducers: (builder) => {
@@ -28,14 +32,15 @@ const userSlice = createSlice({
         state.loading = false;
         state.user = action.payload.user;
         state.isAuthenticated = true;
+        try {
+          localStorage.setItem("user", JSON.stringify(action.payload.user));
+        } catch {}
       })
       .addCase(loginUser.rejected, (state, action) => {
         state.loading = false;
         state.error = action.payload?.message || "Login failed";
-      });
-
-    // 🟢 Register
-    builder
+      })
+      // 🟢 Register
       .addCase(registerUser.pending, (state) => {
         state.loading = true;
         state.error = null;
@@ -44,10 +49,19 @@ const userSlice = createSlice({
         state.loading = false;
         state.user = action.payload.user;
         state.isAuthenticated = true;
+        try {
+          localStorage.setItem("user", JSON.stringify(action.payload.user));
+        } catch {}
       })
       .addCase(registerUser.rejected, (state, action) => {
         state.loading = false;
         state.error = action.payload?.message || "Register failed";
+      })
+      // 🔴 Logout (async)
+      .addCase(logoutUser.fulfilled, (state) => {
+        state.user = null;
+        state.isAuthenticated = false;
+        localStorage.removeItem("user");
       });
   },
 });
