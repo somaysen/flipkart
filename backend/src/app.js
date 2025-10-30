@@ -1,8 +1,9 @@
 const express = require("express")
 const userRoutes = require("../src/routes/user.route")
 const cookieParser = require("cookie-parser")
-const prodectRouters = require("./routes/prodect.route")
+const productRouters = require("./routes/product.route")
 const cors = require('cors')
+const sellerRouters = require('./routes/seller.route')
 
 
 const app = express();
@@ -18,6 +19,7 @@ app.use(
 
 
 app.use("/api/user", userRoutes);
-app.use("/api/product", prodectRouters);
+app.use("/api/product", productRouters);
+app.use("/api/seller",sellerRouters)
 
 module.exports = app;

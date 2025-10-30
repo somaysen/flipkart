@@ -24,21 +24,15 @@ const userSchema = new mongoose.Schema(
       maxlength: 10,
       minlength: 10,
     },
-    role: {
-      type: String,
-      enum: ["user", "seller"],
-      default: "user",
-    },
      isAdmin: {
       type: Boolean,
       default: false,
     },
-    products: [ 
-      {
-        type: mongoose.Schema.Types.ObjectId,
-        ref: "product",
-      },
-    ],
+    seller:{
+      type:mongoose.Schema.Types.ObjectId,
+      ref:"seller",
+      
+    }
   },
   { timestamps: true } 
 );

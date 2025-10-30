@@ -1,4 +1,4 @@
-const ProdectModel = require("../models/prodect.model");
+const ProdectModel = require("../models/product.model");
 const sendFilesToStorage = require("../services/storage.service");
 const mongoose = require('mongoose')
 
@@ -6,7 +6,7 @@ const mongoose = require('mongoose')
 
 const prodectCreateController = async (req, res) => {
   try {
-    let { title, description, amount, currency } = req.body;
+    const { title, description, amount, currency } = req.body;
 
     if (!req.files || req.files.length === 0)
       return res.status(404).json({ message: "Images are required" });
@@ -14,30 +14,37 @@ const prodectCreateController = async (req, res) => {
     if (!title || !description || !amount || !currency)
       return res.status(404).json({ message: "All fields are required" });
 
-    let uploadedImgUrl = await Promise.all(
+    const uploadedImgUrl = await Promise.all(
       req.files.map(async (elem) => {
         return await sendFilesToStorage(elem.buffer, elem.originalname);
       })
     );
 
-    console.log(uploadedImgUrl);
+    // ✅ Get seller ID from middleware
+    const user_id = req.seller?._id || req.user?._id;
 
-    let newProduct = await ProdectModel.create({
+    if (!user_id) {
+      return res.status(400).json({ message: "User ID not found (check sellerValid middleware)" });
+    }
+
+    const newProduct = await ProdectModel.create({
+      user_id, // ✅ required field
       title,
       description,
       price: { amount, currency },
       images: uploadedImgUrl.map((elem) => elem.url),
     });
 
-    console.log(newProduct)
     return res.status(201).json({
       message: "Product created successfully",
       product: newProduct,
     });
   } catch (error) {
+    console.log("productControl error", error);
     return res.status(500).json({ message: "Internal server error", error });
   }
 };
+
 
 
 // View all prodect

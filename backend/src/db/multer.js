@@ -1,12 +1,10 @@
 const multer = require("multer");
 
+// Use memory storage or disk storage
 const storage = multer.memoryStorage();
 
-const upload = multer({
-  storage: storage,
-  limits: {
-    fileSize: 5 * 1024 * 1024,
-  },
-}).any(); // ✅ Accept any file field name
+// Initialize multer
+const upload = multer({ storage });
 
+// ✅ Export the multer instance (NOT upload.single / upload.array)
 module.exports = upload;

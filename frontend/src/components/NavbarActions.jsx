@@ -2,6 +2,7 @@ import { NavLink, useNavigate } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
 import { logout } from "../store/reducers/userSlice";
 import { logoutUser } from "../store/actons/userActions";
+import BecomeSellerButton from "./BecomeSellerButton";
 
 function NavbarActions({ isMobile = false, closeMenu }) {
   const dispatch = useDispatch();
@@ -27,15 +28,7 @@ function NavbarActions({ isMobile = false, closeMenu }) {
     <div className={`${isMobile ? "flex flex-col gap-2" : "hidden md:flex items-center gap-3"}`}>
       {isAuthenticated ? (
         <>
-          <button
-            onClick={() => {
-              navigate("/user/seller");
-              closeMenu && closeMenu();
-            }}
-            className={`${commonClass} bg-green-500 text-white hover:bg-green-600 shadow`}
-          >
-            Become a Seller
-          </button>
+          <BecomeSellerButton/>
 
           {!isMobile && (
             <button

@@ -23,6 +23,17 @@ cacheInstance.on("error", (error) => {
 });
 
 
-app.listen(3000,() =>{
-    console.log("server is runing on 3000");
-})
+const PORT = process.env.PORT || 3000;
+
+// Global error handler
+app.use((err, req, res, next) => {
+  console.error(err.stack);
+  res.status(500).send('Something broke!');
+});
+
+// Start server
+app.listen(PORT, () => {
+    console.log(`Server is running on port ${PORT}`);
+}).on('error', (error) => {
+    console.error('Error starting server:', error);
+});

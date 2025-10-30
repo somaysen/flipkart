@@ -28,9 +28,9 @@ const productSchema = new mongoose.Schema(
       required: true,
       validate: (v) => Array.isArray(v) && v.length > 0,
     },
-    user_id: {
+    seller: {
       type: mongoose.Schema.Types.ObjectId,
-      ref: "User", // ✅ Should start with capital & match model name
+      ref: "Seller"
     },
   },
   { timestamps: true }

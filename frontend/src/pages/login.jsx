@@ -1,8 +1,9 @@
 import React, { useState } from "react";
 import { useForm } from "react-hook-form";
 import { Link, useNavigate } from "react-router-dom";
-import { useDispatch, useSelector } from "react-redux";
+import { useDispatch } from "react-redux";
 import { loginUser } from "../store/actons/userActions";
+import { Eye, EyeOff, Mail, Lock } from "lucide-react";
 
 function Login() {
   const {
@@ -10,102 +11,122 @@ function Login() {
     handleSubmit,
     formState: { errors, isSubmitting },
   } = useForm();
-  const navigate = useNavigate();
-  const [showPassword, setShowPassword] = useState(false);
 
+  const [showPassword, setShowPassword] = useState(false);
+  const navigate = useNavigate();
   const dispatch = useDispatch();
 
   async function onSubmit(data) {
-    // data comes from react-hook-form and contains { email, password }
     try {
       await dispatch(loginUser(data));
-      console.log("user login",data)
+      console.log("user login", data);
       navigate("/");
     } catch (err) {
-      // let the UI handle errors via redux or show a toast later
       console.error("Login failed", err);
     }
   }
 
   return (
-    <div className="min-h-[80vh] flex items-center justify-center py-12 px-4">
-      <div className="max-w-md w-full bg-white/90 backdrop-blur-md p-8 rounded-lg shadow">
-        <h2 className="text-2xl font-semibold text-gray-800 mb-4">Welcome back</h2>
-        <p className="text-sm text-gray-500 mb-6">Sign in to your account</p>
+    <div className="min-h-screen bg-gradient-to-br from-indigo-500 via-purple-500 to-pink-500 flex items-center justify-center px-4 py-10">
+      <div className="w-full max-w-md bg-white/90 backdrop-blur-xl rounded-2xl shadow-2xl p-8">
+        <h2 className="text-3xl font-bold text-center text-gray-800 mb-2">
+          Welcome Back 👋
+        </h2>
+        <p className="text-center text-gray-500 mb-8">
+          Sign in to continue to your account
+        </p>
 
-        <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
+        <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
+          {/* Email */}
           <div>
-            <label className="block text-sm font-medium text-gray-700">Email</label>
-            <input
-              type="email"
-              className={`mt-1 block w-full rounded-md border-gray-200 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 ${
-                errors.email ? "ring-1 ring-red-300" : ""
-              }`}
-              {...register("email", {
-                required: "Email is required",
-                pattern: {
-                  value: /^[^\s@]+@[^\s@]+\.[^\s@]+$/,
-                  message: "Enter a valid email",
-                },
-              })}
-            />
+            <label className="block text-sm font-medium text-gray-700 mb-1">
+              Email Address
+            </label>
+            <div className="relative">
+              <Mail className="absolute left-3 top-3 text-gray-400 w-5 h-5" />
+              <input
+                type="email"
+                placeholder="you@example.com"
+                className={`pl-10 pr-3 py-2 w-full rounded-lg border ${
+                  errors.email ? "border-red-400" : "border-gray-200"
+                } focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition-all`}
+                {...register("email", {
+                  required: "Email is required",
+                  pattern: {
+                    value: /^[^\s@]+@[^\s@]+\.[^\s@]+$/,
+                    message: "Enter a valid email",
+                  },
+                })}
+              />
+            </div>
             {errors.email && (
-              <p className="text-xs text-red-600 mt-1">{errors.email.message}</p>
+              <p className="text-xs text-red-500 mt-1">{errors.email.message}</p>
             )}
           </div>
 
+          {/* Password */}
           <div>
-            <label className="block text-sm font-medium text-gray-700">Password</label>
-            <div className="mt-1 relative">
+            <label className="block text-sm font-medium text-gray-700 mb-1">
+              Password
+            </label>
+            <div className="relative">
+              <Lock className="absolute left-3 top-3 text-gray-400 w-5 h-5" />
               <input
                 type={showPassword ? "text" : "password"}
-                className={`block w-full rounded-md border-gray-200 shadow-sm pr-10 focus:border-indigo-500 focus:ring-indigo-500 ${
-                  errors.password ? "ring-1 ring-red-300" : ""
-                }`}
+                placeholder="••••••••"
+                className={`pl-10 pr-10 py-2 w-full rounded-lg border ${
+                  errors.password ? "border-red-400" : "border-gray-200"
+                } focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition-all`}
                 {...register("password", {
                   required: "Password is required",
-                  minLength: { value: 6, message: "Minimum 6 characters" },
+                  minLength: {
+                    value: 6,
+                    message: "Minimum 6 characters required",
+                  },
                 })}
               />
-
               <button
                 type="button"
-                onClick={() => setShowPassword((s) => !s)}
-                className="absolute inset-y-0 right-0 pr-3 flex items-center text-sm text-gray-500"
-                aria-label={showPassword ? "Hide password" : "Show password"}
+                onClick={() => setShowPassword((prev) => !prev)}
+                className="absolute right-3 top-2.5 text-gray-500 hover:text-gray-700"
               >
-                {showPassword ? "Hide" : "Show"}
+                {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
               </button>
             </div>
             {errors.password && (
-              <p className="text-xs text-red-600 mt-1">{errors.password.message}</p>
+              <p className="text-xs text-red-500 mt-1">
+                {errors.password.message}
+              </p>
             )}
           </div>
 
-          <div className="flex items-center justify-between">
-            <div className="text-sm">
-              <Link to="/forgot" className="text-indigo-600 hover:underline">
-                Forgot password?
-              </Link>
-            </div>
-
-            <div className="text-sm text-gray-500">
-              <span>New here? </span>
-              <Link to="/register" className="text-indigo-600 hover:underline">
+          {/* Forgot & Register Links */}
+          <div className="flex items-center justify-between text-sm">
+            <Link
+              to="/forgot"
+              className="text-indigo-600 hover:text-indigo-700 font-medium"
+            >
+              Forgot password?
+            </Link>
+            <p className="text-gray-600">
+              New here?{" "}
+              <Link
+                to="/register"
+                className="text-indigo-600 hover:text-indigo-700 font-medium"
+              >
                 Create account
               </Link>
-            </div>
+            </p>
           </div>
 
-          <div>
-            <button
-              type="submit"
-              disabled={isSubmitting}
-              className="w-full inline-flex items-center justify-center px-4 py-2 bg-indigo-600 text-white rounded-md shadow hover:brightness-105 disabled:opacity-70"
-            >
-              {isSubmitting ? "Signing in..." : "Sign in"}
-            </button>
-          </div>
+          {/* Submit */}
+          <button
+            type="submit"
+            disabled={isSubmitting}
+            className="w-full bg-indigo-600 hover:bg-indigo-700 text-white py-2 rounded-lg font-semibold shadow-md hover:shadow-lg transition-all duration-200 disabled:opacity-70"
+          >
+            {isSubmitting ? "Signing in..." : "Sign in"}
+          </button>
         </form>
       </div>
     </div>
