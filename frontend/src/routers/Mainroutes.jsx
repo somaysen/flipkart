@@ -3,6 +3,7 @@ import Home from '../pages/Home'
 import Register from '../auth/register'
 import Login from '../auth/login'
 import Forgot from '../auth/Forgot'
+import Forgotpas from '../auth/Forgotpas'
 import Logout from '../auth/Logout'
 import SellerLogin from '../seller/SellerLogin'
 import SellerRegister from '../seller/SellerRegister'
@@ -35,6 +36,12 @@ function Router() {
           <Route path="/forgot" element={
             <UnAuthRoute>
               <Forgot />
+            </UnAuthRoute>
+            } />
+
+          <Route path="/reset-password/:token" element={
+            <UnAuthRoute>
+              <Forgotpas />
             </UnAuthRoute>
             } />
 

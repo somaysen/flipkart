@@ -6,12 +6,37 @@ import { Mail } from "lucide-react"; // nice mail icon
 function Forgot() {
   const { register, handleSubmit, formState: { errors, isSubmitting } } = useForm();
   const [done, setDone] = useState(false);
+  const [serverError, setServerError] = useState("");
 
   async function onSubmit(data) {
-    console.log("Forgot request", data);
-    // Simulate API call
-    await new Promise((r) => setTimeout(r, 800));
-    setDone(true);
+    setServerError("");
+    try {
+      const baseUrl = import.meta?.env?.VITE_API_URL || "http://localhost:3000";
+      const res = await fetch(`${baseUrl}/api/user/forget-password`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        credentials: "include",
+        body: JSON.stringify({ email: String(data.email).trim().toLowerCase() }),
+      });
+
+      // We intentionally show success message even if user not found to avoid enumeration
+      if (res.ok) {
+        setDone(true);
+        return;
+      }
+
+      // Try to surface a safe error if available
+      const payload = await res.json().catch(() => ({}));
+      if (payload?.message) {
+        setServerError(payload.message);
+      } else {
+        setServerError("Something went wrong. Please try again.");
+      }
+    } catch (err) {
+      setServerError("Network error. Please try again.");
+    }
   }
 
   // ✅ After submitting
@@ -48,6 +73,10 @@ function Forgot() {
             Enter your email and we’ll send a link to reset your password.
           </p>
         </div>
+
+        {serverError ? (
+          <p className="text-sm text-red-600 mb-3 text-center">{serverError}</p>
+        ) : null}
 
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-5">
           <div>
