@@ -1,127 +1,86 @@
-import { useState } from "react";
-import { useForm } from "react-hook-form";
-import { Link } from "react-router-dom";
-import { Mail } from "lucide-react"; // nice mail icon
+import React, { useState, useEffect } from "react";
+import { useParams } from "react-router-dom";
 
-function Forgot() {
-  const { register, handleSubmit, formState: { errors, isSubmitting } } = useForm();
-  const [done, setDone] = useState(false);
-  const [serverError, setServerError] = useState("");
+function ResetPassword() {
+  const { token } = useParams();
+  const [password, setPassword] = useState("");
+  const [confirm, setConfirm] = useState("");
+  const [message, setMessage] = useState("");
+  const [error, setError] = useState("");
 
-  async function onSubmit(data) {
-    setServerError("");
+  // Verify token when page loads
+  useEffect(() => {
+    fetch(`http://localhost:3000/api/user/reset-password/${token}`)
+      .then((res) => res.json())
+      .then((data) => {
+        if (!data.userId) throw new Error(data.message);
+      })
+      .catch((err) => setError(err.message));
+  }, [token]);
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    if (password !== confirm) {
+      setError("Passwords do not match");
+      return;
+    }
+
     try {
-      const baseUrl = import.meta?.env?.VITE_API_URL || "http://localhost:3000";
-      const res = await fetch(`${baseUrl}/api/user/forget-password`, {
+      const res = await fetch("http://localhost:3000/api/user/reset-password", {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        credentials: "include",
-        body: JSON.stringify({ email: String(data.email).trim().toLowerCase() }),
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ token, newPassword: password }),
       });
 
-      // We intentionally show success message even if user not found to avoid enumeration
-      if (res.ok) {
-        setDone(true);
-        return;
-      }
-
-      // Try to surface a safe error if available
-      const payload = await res.json().catch(() => ({}));
-      if (payload?.message) {
-        setServerError(payload.message);
-      } else {
-        setServerError("Something went wrong. Please try again.");
-      }
+      const data = await res.json();
+      if (res.ok) setMessage(data.message);
+      else setError(data.message);
     } catch (err) {
-      setServerError("Network error. Please try again.");
+      setError("Something went wrong. Try again.");
     }
-  }
+  };
 
-  // ✅ After submitting
-  if (done) {
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-indigo-50 via-white to-indigo-100 p-6">
-        <div className="max-w-md w-full bg-white shadow-xl rounded-2xl p-8 text-center animate-fadeIn">
-          <div className="flex justify-center mb-4">
-            <Mail className="w-12 h-12 text-indigo-600" />
-          </div>
-          <h2 className="text-2xl font-bold text-gray-800 mb-2">Check your email</h2>
-          <p className="text-sm text-gray-600 mb-6">
-            If an account exists for that email, we've sent reset instructions.
-          </p>
-          <Link
-            to="/login"
-            className="text-indigo-600 font-medium hover:underline transition"
-          >
-            ← Back to login
-          </Link>
-        </div>
-      </div>
-    );
-  }
-
-  // ✅ Default Forgot Password UI
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-indigo-50 via-white to-indigo-100 p-6">
-      <div className="max-w-md w-full bg-white shadow-xl rounded-2xl p-8 animate-fadeIn">
-        <div className="text-center mb-6">
-          <Mail className="w-12 h-12 text-indigo-600 mx-auto mb-2" />
-          <h2 className="text-2xl font-bold text-gray-800">Forgot your password?</h2>
-          <p className="text-sm text-gray-600 mt-2">
-            Enter your email and we’ll send a link to reset your password.
-          </p>
-        </div>
+    <div className="min-h-screen flex items-center justify-center bg-gray-100">
+      <div className="bg-white p-8 rounded-xl shadow-lg w-full max-w-md">
+        <h2 className="text-2xl font-bold text-center mb-6">Reset Password</h2>
 
-        {serverError ? (
-          <p className="text-sm text-red-600 mb-3 text-center">{serverError}</p>
-        ) : null}
+        {message && <p className="text-green-600 text-center mb-3">{message}</p>}
+        {error && <p className="text-red-500 text-center mb-3">{error}</p>}
 
-        <form onSubmit={handleSubmit(onSubmit)} className="space-y-5">
-          <div>
-            <label className="block text-sm font-medium text-gray-700">Email address</label>
-            <input
-              type="email"
-              placeholder="you@example.com"
-              className={`mt-1 block w-full rounded-lg border border-gray-200 bg-gray-50 px-3 py-2 text-gray-800 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition ${
-                errors.email ? "ring-1 ring-red-300 bg-red-50" : ""
-              }`}
-              {...register("email", {
-                required: "Email is required",
-                pattern: {
-                  value: /^[^\s@]+@[^\s@]+\.[^\s@]+$/,
-                  message: "Enter a valid email address",
-                },
-              })}
-            />
-            {errors.email && (
-              <p className="text-xs text-red-600 mt-1">{errors.email.message}</p>
-            )}
-          </div>
+        <form onSubmit={handleSubmit}>
+          <label className="block mb-2 text-sm font-medium text-gray-700">
+            New Password
+          </label>
+          <input
+            type="password"
+            className="w-full border border-gray-300 rounded-lg p-2 mb-4"
+            placeholder="Enter new password"
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+          />
+
+          <label className="block mb-2 text-sm font-medium text-gray-700">
+            Confirm Password
+          </label>
+          <input
+            type="password"
+            className="w-full border border-gray-300 rounded-lg p-2 mb-4"
+            placeholder="Confirm new password"
+            value={confirm}
+            onChange={(e) => setConfirm(e.target.value)}
+          />
 
           <button
             type="submit"
-            disabled={isSubmitting}
-            className={`w-full py-2.5 rounded-lg font-semibold text-white bg-indigo-600 hover:bg-indigo-700 focus:ring-4 focus:ring-indigo-300 transition disabled:opacity-50 ${
-              isSubmitting ? "cursor-not-allowed" : ""
-            }`}
+            className="w-full bg-blue-600 text-white py-2 rounded-lg hover:bg-blue-700"
           >
-            {isSubmitting ? "Sending..." : "Send Reset Link"}
+            Update Password
           </button>
         </form>
-
-        <div className="text-center mt-4">
-          <Link
-            to="/login"
-            className="text-sm text-indigo-600 hover:underline transition"
-          >
-            Back to login
-          </Link>
-        </div>
       </div>
     </div>
   );
 }
 
-export default Forgot;
+export default ResetPassword;

@@ -1,8 +1,10 @@
 import React from "react";
 import { useNavigate } from "react-router-dom";
+import { useSelector } from "react-redux";
 
 function ProductCard({ product }) {
   const navigate = useNavigate();
+  const { isAuthenticated } = useSelector((s) => s.user || {});
   return (
     <div className="bg-white shadow-md rounded-2xl overflow-hidden hover:shadow-lg transition">
       <img
@@ -19,12 +21,14 @@ function ProductCard({ product }) {
           <span className="font-bold text-green-600">
             {product.price?.amount} {product.price?.currency}
           </span>
-          <button
-            className="bg-blue-500 text-white px-3 py-1 rounded-lg text-sm hover:bg-blue-600"
-            onClick={() => navigate(`/product/${product._id}`)}
-          >
-            View Details
-          </button>
+          {isAuthenticated && (
+            <button
+              className="bg-blue-500 text-white px-3 py-1 rounded-lg text-sm hover:bg-blue-600"
+              onClick={() => navigate(`/product/${product._id}`)}
+            >
+              View Details
+            </button>
+          )}
         </div>
       </div>
     </div>

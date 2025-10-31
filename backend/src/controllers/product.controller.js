@@ -45,8 +45,6 @@ const prodectCreateController = async (req, res) => {
   }
 };
 
-// View all prodect
-
 const prodectGetController = async (req, res) => {
   try {
     let products = await ProdectModel.find();

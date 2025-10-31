@@ -39,3 +39,42 @@ export const logoutUser = createAsyncThunk(
     }
   }
 );
+
+// 📧 Request email change OTP
+export const requestEmailChangeOtp = createAsyncThunk(
+  "user/requestEmailChangeOtp",
+  async (_, { rejectWithValue }) => {
+    try {
+      const response = await api.post("/user/email-change/request-otp");
+      return response.data;
+    } catch (error) {
+      return rejectWithValue(error.response?.data || { message: "Failed to send OTP" });
+    }
+  }
+);
+
+// 🔐 Verify email change OTP (optional server-side verification step)
+export const verifyEmailChangeOtp = createAsyncThunk(
+  "user/verifyEmailChangeOtp",
+  async ({ otp }, { rejectWithValue }) => {
+    try {
+      const response = await api.post("/user/email-change/verify-otp", { otp });
+      return response.data;
+    } catch (error) {
+      return rejectWithValue(error.response?.data || { message: "Invalid OTP" });
+    }
+  }
+);
+
+// ✉️ Change email
+export const changeEmail = createAsyncThunk(
+  "user/changeEmail",
+  async ({ newEmail, otp }, { rejectWithValue }) => {
+    try {
+      const response = await api.post("/user/email-change", { newEmail, otp });
+      return response.data; // expect { user }
+    } catch (error) {
+      return rejectWithValue(error.response?.data || { message: "Email change failed" });
+    }
+  }
+);

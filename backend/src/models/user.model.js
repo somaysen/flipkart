@@ -55,7 +55,7 @@ const userSchema = new mongoose.Schema(
           currency: { type: String, enum: ["INR", "DOLLAR"], default: "INR" },
         },
         total: { type: Number, required: true },
-      },
+      },{timestamps:true},
     ],
     orders: {
       type: Array,
@@ -79,7 +79,7 @@ const userSchema = new mongoose.Schema(
             enum: ["pending", "confirmed", "shipped", "delivered", "cancelled"],
             default: "pending",
           },
-        },
+        },{timestamps:true},
       ],
     },
   },

@@ -4,7 +4,7 @@ const jwt = require("jsonwebtoken");
 const sendMail = require("../services/mail.service");
 const resetPassTemplate = require("../utils/email.template");
 const ProductModel = require("../models/product.model");
-
+const bcrypt = require('bcrypt')
 
 const registerController = async(req, res) =>{
     
@@ -157,65 +157,75 @@ const forgetpassController = async (req, res) => {
       return res.status(404).json({ message: "User not found" });
     }
 
-    const rawToken = jwt.sign({ id: user._id }, process.env.JWT_RAW_SECRET, {
-      expiresIn: "10min",
-    });
+    // ✅ Create JWT token valid for 10 minutes
+    const token = jwt.sign(
+      { id: user._id },
+      process.env.JWT_SECRET,
+      { expiresIn: "10m" }
+    );
 
-    const resetLink = `http://localhost:3000/api/user/reset-password/${rawToken}`;
+    // ✅ Link to frontend reset page
+    const FRONTEND_URL = process.env.FRONTEND_URL || "http://localhost:5174";
+    const resetLink = `${FRONTEND_URL}/reset-password/${token}`;
+
+    // ✅ Send email
     const emailTemplate = resetPassTemplate(user.name, resetLink);
-
     await sendMail(user.email, "Reset Your Password", emailTemplate);
 
     return res.status(200).json({
-      message: "Reset password email sent successfully",
+      message: "Reset password link sent to your email.",
     });
   } catch (error) {
-    console.error("Error in forget password controller:", error);
-    return res.status(500).json({
-      message: "Internal server error",
-      error: error.message,
+    console.error("Error in forget password controller:", error.message);
+    return res.status(500).json({ message: "Internal server error" });
+  }
+};
+
+const verifyResetToken = async (req, res) => {
+  try {
+    const { token } = req.params;
+
+    if (!token) {
+      return res.status(400).json({ message: "Token not found" });
+    }
+
+    const decoded = jwt.verify(token, process.env.JWT_SECRET);
+
+    return res.status(200).json({
+      message: "Token verified successfully",
+      userId: decoded.id,
+    });
+  } catch (error) {
+    console.error("Invalid or expired token:", error.message);
+    return res.status(401).json({
+      message: "Invalid or expired token. Please request a new reset link.",
     });
   }
 };
 
-const addToCartController = async (req, res) => {
+const resetPasswordController = async (req, res) => {
   try {
-    const productId = req.product?._id;
-    const quantity = Number(req.body?.quantity);
+    const { token, newPassword } = req.body;
 
-    if (!productId) return res.status(400).json({ message: "productId is required" });
-    if (quantity < 1) return res.status(400).json({ message: "quantity must be at least 1" });
-
-    const product = req.product || await ProductModel.findById(productId);
-    if (!product) return res.status(404).json({ message: "Product not found" });
-
-    const user = await UserModel.findById(req.user?._id);
-    if (!user) return res.status(401).json({ message: "User not found or unauthorized" });
-
-    const amount = Number(product.price?.amount ?? product.amount ?? 0);
-    const currency = product.price?.currency || product.currency || "INR";
-    if (amount <= 0) return res.status(400).json({ message: "Invalid product price" });
-
-    user.cart ||= [];
-
-    const existingItem = user.cart.find(i => i.product.toString() === productId);
-    if (existingItem) {
-      existingItem.quantity += quantity;
-      existingItem.total = existingItem.quantity * amount;
-    } else {
-      user.cart.push({
-        product: productId,
-        quantity,
-        price: { amount, currency },
-        total: quantity * amount,
-      });
+    if (!token || !newPassword) {
+      return res.status(400).json({ message: "Token and new password are required" });
     }
 
-    await user.save();
-    res.status(200).json({ message: "Product added to cart", cart: user.cart });
-  } catch (err) {
-    console.error("❌ addToCartController error:", err);
-    res.status(500).json({ message: "Internal server error", error: err.message });
+    // ✅ Verify token
+    const decoded = jwt.verify(token, process.env.JWT_SECRET);
+
+    // ✅ Hash password
+    const hashedPassword = await bcrypt.hash(newPassword, 10);
+
+    // ✅ Update user password
+    await UserModel.findByIdAndUpdate(decoded.id, { password: hashedPassword });
+
+    return res.status(200).json({ message: "Password reset successfully!" });
+  } catch (error) {
+    console.error("Error in reset password controller:", error.message);
+    return res.status(401).json({
+      message: "Invalid or expired token. Please request a new reset link.",
+    });
   }
 };
 
@@ -282,7 +292,46 @@ const userUpdatedcontroller = async (req, res) => {
   }
 }; 
 
+const addToCartController = async (req, res) => {
+    try {
+    const {productId} = req.params;
+    const quantity = Number(req.body?.quantity);
 
+    if (!productId) return res.status(400).json({ message: "productId is required" });
+    if (quantity < 1) return res.status(400).json({ message: "quantity must be at least 1" });
+
+    const product = req.product || await ProductModel.findById(productId);
+    if (!product) return res.status(404).json({ message: "Product not found" });
+
+    const user = await UserModel.findById(req.user?._id);
+    if (!user) return res.status(401).json({ message: "User not found or unauthorized" });
+
+    const amount = Number(product.price?.amount ?? product.amount ?? 0);
+    const currency = product.price?.currency || product.currency || "INR";
+    if (amount <= 0) return res.status(400).json({ message: "Invalid product price" });
+
+    user.cart ||= [];
+
+    const existingItem = user.cart.find(i => i.product.toString() === productId);
+    if (existingItem) {
+      existingItem.quantity += quantity;
+      existingItem.total = existingItem.quantity * amount;
+    } else {
+      user.cart.push({
+        product: productId,
+        quantity,
+        price: { amount, currency },
+        total: quantity * amount,
+      });
+    }
+
+    await user.save();
+    res.status(200).json({ message: "Product added to cart", cart: user.cart });
+  } catch (err) {
+    console.error("❌ addToCartController error:", err);
+    res.status(500).json({ message: "Internal server error", error: err.message });
+  }
+};
 
 
 module.exports = {
@@ -291,5 +340,7 @@ module.exports = {
   logoutController,
   forgetpassController,
   addToCartController,
-  userUpdatedcontroller
+  userUpdatedcontroller,
+  resetPasswordController,
+  verifyResetToken
 };

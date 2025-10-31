@@ -3,6 +3,7 @@ import Home from '../pages/Home'
 import Register from '../auth/register'
 import Login from '../auth/login'
 import Forgot from '../auth/Forgot'
+import EmailChange from '../auth/EmailChange'
 import Forgotpas from '../auth/Forgotpas'
 import Logout from '../auth/Logout'
 import SellerLogin from '../seller/SellerLogin'
@@ -14,6 +15,9 @@ import SellerAuthRoute from './SellerAuth'
 import CreateProduct from '../products/createProdect'
 import UpdateProduct from '../products/UpdateProduct'
 import ProdectDetails from '../products/prodectDetails'
+import AddToCard from '../pages/AddToCard'
+
+
 
 function Router() {
   return (
@@ -35,14 +39,20 @@ function Router() {
 
           <Route path="/forgot" element={
             <UnAuthRoute>
-              <Forgot />
+              <Forgotpas />
             </UnAuthRoute>
             } />
 
           <Route path="/reset-password/:token" element={
             <UnAuthRoute>
-              <Forgotpas />
+              <Forgot />
             </UnAuthRoute>
+            } />
+
+          <Route path="/change-email" element={
+            <AuthRoute>
+              <EmailChange />
+            </AuthRoute>
             } />
 
           <Route path="/logout" element={ 
@@ -50,6 +60,19 @@ function Router() {
               <Logout />
             </AuthRoute>
             } />
+
+            <Route path='/user/add-to-card' element={
+              <AuthRoute>
+                <AddToCard/>
+              </AuthRoute>
+            } />
+
+            <Route path='/user/changed/email' element={
+              <AuthRoute>
+                <EmailChange/>
+              </AuthRoute>
+            } />
+            
           
         <Route path='/seller/login' element={<SellerLogin/>} />
         <Route path='/seller/register' element={<SellerRegister/>} />

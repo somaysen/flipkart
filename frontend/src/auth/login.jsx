@@ -21,7 +21,7 @@ function Login() {
     try {
       setLoginError("");
       const result = await dispatch(loginUser(data)).unwrap();
-      console.log("user login", result);
+      // console.log("user login", result);
       navigate("/");
     } catch (err) {
       setLoginError(err?.message || "Login failed. Please check your credentials.");
