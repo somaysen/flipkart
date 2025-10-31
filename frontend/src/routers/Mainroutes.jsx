@@ -1,9 +1,9 @@
 import { Route, Routes } from 'react-router-dom'
 import Home from '../pages/Home'
-import Register from '../pages/register'
-import Login from '../pages/login'
-import Forgot from '../pages/Forgot'
-import Logout from '../pages/Logout'
+import Register from '../auth/register'
+import Login from '../auth/login'
+import Forgot from '../auth/Forgot'
+import Logout from '../auth/Logout'
 import SellerLogin from '../seller/SellerLogin'
 import SellerRegister from '../seller/SellerRegister'
 import SellerProducts from '../seller/SellerProdect'
@@ -12,6 +12,7 @@ import AuthRoute from './Auth'
 import SellerAuthRoute from './SellerAuth'
 import CreateProduct from '../products/createProdect'
 import UpdateProduct from '../products/UpdateProduct'
+import ProdectDetails from '../products/prodectDetails'
 
 function Router() {
   return (
@@ -70,6 +71,7 @@ function Router() {
             <UpdateProduct/>
           </SellerAuthRoute>
           } />
+        <Route path='/product/:id' element={<ProdectDetails/>} />
     </Routes>
   )
 }

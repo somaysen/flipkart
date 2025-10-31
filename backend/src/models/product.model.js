@@ -28,9 +28,10 @@ const productSchema = new mongoose.Schema(
       required: true,
       validate: (v) => Array.isArray(v) && v.length > 0,
     },
-    seller: {
+    Seller_id: {
       type: mongoose.Schema.Types.ObjectId,
-      ref: "Seller"
+      ref: "Seller",
+      required: true
     },
   },
   { timestamps: true }

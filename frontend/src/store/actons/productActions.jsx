@@ -76,3 +76,18 @@ export const updateSellerProduct = createAsyncThunk(
     }
   }
 );
+
+// Fetch single product details
+export const fetchProductDetails = createAsyncThunk(
+  "productDetails/fetch",
+  async (id, { rejectWithValue }) => {
+    try {
+      const res = await api.get(`/product/details/${id}`);
+      return res.data.product;
+    } catch (error) {
+      return rejectWithValue(
+        error.response?.data || { message: "Failed to fetch product details" }
+      );
+    }
+  }
+); 

@@ -58,7 +58,7 @@ sellerSchema.methods.comparePass = async function (password) {
 sellerSchema.methods.generateToken = function (expiresIn = "1d") {
   return jwt.sign(
     { id: this._id, email: this.email },
-    process.env.JWT_SECRET,
+    process.env.JWT_SECRET_SELLER,
     { expiresIn }
   );
 };

@@ -13,15 +13,18 @@ function Login() {
   } = useForm();
 
   const [showPassword, setShowPassword] = useState(false);
+  const [loginError, setLoginError] = useState("");
   const navigate = useNavigate();
   const dispatch = useDispatch();
 
   async function onSubmit(data) {
     try {
-      await dispatch(loginUser(data));
-      console.log("user login", data);
+      setLoginError("");
+      const result = await dispatch(loginUser(data)).unwrap();
+      console.log("user login", result);
       navigate("/");
     } catch (err) {
+      setLoginError(err?.message || "Login failed. Please check your credentials.");
       console.error("Login failed", err);
     }
   }
@@ -37,6 +40,11 @@ function Login() {
         </p>
 
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
+          {loginError && (
+            <div className="text-sm text-red-700 bg-red-50 border border-red-200 rounded-md p-3">
+              {loginError}
+            </div>
+          )}
           {/* Email */}
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">

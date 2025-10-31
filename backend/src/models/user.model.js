@@ -13,6 +13,10 @@ const userSchema = new mongoose.Schema(
       required: true,
       unique: true, // ✅ was misspelled as 'uniqes'
     },
+    isOtpVerified: {
+      type: Boolean,
+      default: false,
+    },
     password: {
       type: String,
       required: true,
@@ -31,8 +35,53 @@ const userSchema = new mongoose.Schema(
     seller:{
       type:mongoose.Schema.Types.ObjectId,
       ref:"seller",
-      
-    }
+      default: null,
+    },
+    cart: [
+      {
+        product: {
+          type: mongoose.Schema.Types.ObjectId,
+          ref: "Product",
+          required: true,
+        },
+        quantity: {
+          type: Number,
+          required: true,
+          min: 1,
+          default: 1,
+        },
+        price: {
+          amount: { type: Number, required: true },
+          currency: { type: String, enum: ["INR", "DOLLAR"], default: "INR" },
+        },
+        total: { type: Number, required: true },
+      },
+    ],
+    orders: {
+      type: Array,
+      default: [
+        {
+          product: {
+            type: mongoose.Schema.Types.ObjectId,
+            ref: "Product",
+          },
+          quantity: {
+            type: Number,
+          },
+          price: {
+            type: Number,
+          },
+          total: {
+            type: Number,
+          },
+          status: {
+            type: String,
+            enum: ["pending", "confirmed", "shipped", "delivered", "cancelled"],
+            default: "pending",
+          },
+        },
+      ],
+    },
   },
   { timestamps: true } 
 );

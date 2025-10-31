@@ -1,6 +1,7 @@
 const UserModel = require("../models/user.model");
 const cacheInstance = require("../services/cache.service");
 const jwt = require("jsonwebtoken");
+const ProductModel = require("../models/product.model");
 
 const authMiddleware = async (req, res, next) => {
   
@@ -35,6 +36,28 @@ const authMiddleware = async (req, res, next) => {
   }
 };
 
+const AddToCartMiddleware = async (req, res, next) => {
+  try {
+    let productId = req.params.productId;
+    if (!productId)
+      return res.status(404).json({
+        message: "Product ID not found",
+      });
+    let product = await ProductModel.findById(productId);
+    if (!product)
+      return res.status(404).json({
+        message: "Product not found",
+      });
+    req.product = product;
+    next();
+  } catch (error) {
+    console.log("Error in AddToCartMiddleware", error);
+    return res.status(500).json({
+      message: "Internal server error",
+      error: error.message,
+    });
+  }
+}
 
 
-module.exports = authMiddleware;
+module.exports = {authMiddleware,AddToCartMiddleware};

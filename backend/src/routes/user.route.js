@@ -1,8 +1,15 @@
 const express = require("express");
-const { registerController,loginController,logoutController,forgetpassController } = require("../controllers/user.controller");
-const authMiddleware = require("../middlewares/auth.middlewar");
+const { registerController,
+  loginController,
+  logoutController,
+  forgetpassController,
+  addToCartController,
+  userUpdatedcontroller } = require("../controllers/user.controller");
+const { authMiddleware, AddToCartMiddleware } = require("../middlewares/auth.middlewar");
 const router = express.Router();
 const jwt = require("jsonwebtoken");
+
+const {sendEmailOtpController,verifyEmailOtpController,changeEmailController} = require("../controllers/Update.controller")
 
 router.get("/",authMiddleware,(req,res)=>{
     res.send("user route is working")
@@ -38,6 +45,15 @@ router.get("/reset-password/:token", async (req, res) => {
     });
   }
 });
+
+
+router.post("/add-to-cart/:productId", authMiddleware, AddToCartMiddleware, addToCartController);
+router.post("/user-Update",authMiddleware,userUpdatedcontroller);
+
+router.post("/send-email-otp/:id",authMiddleware,sendEmailOtpController);
+router.post("/verify-email-otp/:id",authMiddleware,verifyEmailOtpController);
+router.post("/change-email/:id",authMiddleware,changeEmailController);
+
 
 
 module.exports = router;

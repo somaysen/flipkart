@@ -145,10 +145,33 @@ const prodectDeleteController = async (req, res) => {
   }
 };
 
+const prodectDetailsController = async (req, res) => {
+  try {
+    const id = req.params.id || req.params._id;
+
+    if (!id)
+      return res.status(404).json({ message: "Product id is required" });
+
+    
+
+    const product = await   ProdectModel.findById(id);
+    
+    if (!product)
+      return res.status(404).json({ message: "Product not found" });
+
+    
+
+    return res.status(200).json({ message: "Product details", product });
+  } catch (error) {
+    return res.status(500).json({ message: "Internal server error", error });
+  }
+};
+
 module.exports = {
   prodectCreateController,
   prodectGetController,
   prodectGetForSellerController,
   prodectUpdateController,
   prodectDeleteController,
+  prodectDetailsController,
 };
