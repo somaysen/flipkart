@@ -4,7 +4,7 @@ const mongoose = require('mongoose')
 
 // Create a Prodect
 
-const prodectCreateController = async (req, res) => {
+const productCreateController = async (req, res) => {
   try {
     const { title, description, amount, currency } = req.body;
 
