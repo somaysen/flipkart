@@ -5,7 +5,7 @@ function AddToCard() {
   const [cartItems, setCartItems] = useState([
     {
       id: 1,
-      title: "Wireless Headphones",
+      title: "Wireless Earphones",
       price: 1200,
       quantity: 1,
       image:
