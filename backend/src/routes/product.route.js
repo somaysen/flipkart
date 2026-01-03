@@ -5,7 +5,7 @@ const sellerAuth = require("../middlewares/seller.middleware");
 const {authMiddleware} = require("../middlewares/auth.middlewar");
 
 const {
-  prodectCreateController,
+  productCreateController,
   prodectGetController,
   prodectGetForSellerController,
   prodectUpdateController,
@@ -18,7 +18,7 @@ router.post(
   "/create-product",
   sellerAuth,
   upload.array("images", 5),
-  prodectCreateController
+  productCreateController
 ); //it's working seller only
 
 router.get("/products", prodectGetController);// it working both seller and user 

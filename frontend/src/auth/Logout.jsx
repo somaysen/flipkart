@@ -17,8 +17,7 @@ function Logout() {
         // ignore error, still clear client-side state
       }
 
-      // Clear client-side auth
-      localStorage.removeItem('token')
+      // Clear client-side user state (server will clear httpOnly cookie)
       dispatch(logout())
       navigate('/login')
     })()

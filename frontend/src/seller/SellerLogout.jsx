@@ -12,7 +12,6 @@ function SellerLogout() {
     try {
       await api.post('/seller/logout');
     } catch {}
-    try { localStorage.removeItem('sellerToken'); } catch {}
     dispatch(logoutSeller());
     navigate('/seller/login');
   }

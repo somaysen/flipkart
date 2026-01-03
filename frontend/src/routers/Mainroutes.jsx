@@ -101,7 +101,11 @@ function Router() {
             <UpdateProduct/>
           </SellerAuthRoute>
           } />
-        <Route path='/product/:id' element={<ProdectDetails/>} />
+        <Route path='/product/:id' element={
+          <AuthRoute>
+            <ProdectDetails/>
+          </AuthRoute>
+        } />
     </Routes>
   )
 }

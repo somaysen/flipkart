@@ -31,11 +31,11 @@ async function registerSeller(req, res) {
     // Generate JWT token (valid for 7 days)
     const token = seller.generateToken("7d");
 
-    // Set cookie securely
-    res.cookie("token", token, {
+    // Set cookie securely (seller token)
+    res.cookie("sellerToken", token, {
       httpOnly: true,
-      secure: process.env.NODE_ENV === "production",
-      sameSite: process.env.NODE_ENV === "production" ? "none" : "lax",
+      // secure: process.env.NODE_ENV === "production",
+      // sameSite: process.env.NODE_ENV === "production" ? "none" : "lax",
       maxAge: 7 * 24 * 60 * 60 * 1000,
     });
 
@@ -77,10 +77,10 @@ async function loginSeller(req, res) {
 
     const token = seller.generateToken("7d");
 
-    res.cookie("token", token, {
+    res.cookie("sellerToken", token, {
       httpOnly: true,
-      secure: process.env.NODE_ENV === "production",
-      sameSite: process.env.NODE_ENV === "production" ? "none" : "lax",
+      // secure: process.env.NODE_ENV === "production",
+      // sameSite: process.env.NODE_ENV === "production" ? "none" : "lax",
       maxAge: 7 * 24 * 60 * 60 * 1000,
     });
 
@@ -104,11 +104,16 @@ async function loginSeller(req, res) {
 
 
 function logoutSeller(req, res) {
-  res.clearCookie("token", {
+  // Clear seller token cookie
+  res.clearCookie("sellerToken", {
     httpOnly: true,
     secure: process.env.NODE_ENV === "production",
     sameSite: process.env.NODE_ENV === "production" ? "none" : "lax",
+    path: '/',
   });
+
+  // Also clear generic token cookie just in case
+  res.clearCookie("token", { path: '/' });
 
   return res.status(200).json({ message: "Logout successful" });
 }
@@ -134,4 +139,27 @@ async function sellerProducts(req, res) {
 
 
 
-module.exports = { registerSeller, loginSeller, logoutSeller,sellerProducts };
+// Verify seller session (used by frontend to confirm httpOnly cookie)
+async function verifySeller(req, res) {
+  try {
+    const seller = req.seller;
+    if (!seller) return res.status(401).json({ message: "Not authenticated" });
+
+    return res.status(200).json({
+      message: "Seller session valid",
+      seller: {
+        _id: seller._id,
+        name: seller.name,
+        email: seller.email,
+        phone: seller.phone,
+        address: seller.address,
+        contactName: seller.contactName,
+      },
+    });
+  } catch (err) {
+    console.error("Error in verifySeller:", err);
+    return res.status(500).json({ message: "Internal server error" });
+  }
+}
+
+module.exports = { registerSeller, loginSeller, logoutSeller, sellerProducts, verifySeller };

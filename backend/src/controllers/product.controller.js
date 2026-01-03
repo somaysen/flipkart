@@ -8,15 +8,36 @@ const productCreateController = async (req, res) => {
   try {
     const { title, description, amount, currency } = req.body;
 
-    if (!req.files || req.files.length === 0)
-      return res.status(404).json({ message: "Images are required" });
+    // Basic validation
+    if (!req.files || req.files.length === 0) {
+      return res.status(400).json({ message: "Images are required" });
+    }
 
-    if (!title || !description || !amount || !currency)
-      return res.status(404).json({ message: "All fields are required" });
+    if (!title || !description || amount === undefined || amount === null) {
+      return res.status(400).json({ message: "Title, description and amount are required" });
+    }
 
+    // Numeric amount validation
+    const parsedAmount = Number(amount);
+    if (Number.isNaN(parsedAmount) || parsedAmount <= 0) {
+      return res.status(400).json({ message: "Amount must be a positive number" });
+    }
+
+    // Currency validation (fallback to INR if not provided)
+    const allowedCurrencies = ["INR", "USD", "EUR"];
+    const finalCurrency = (currency && String(currency).toUpperCase()) || "INR";
+    if (!allowedCurrencies.includes(finalCurrency)) {
+      return res.status(400).json({ message: `Currency must be one of: ${allowedCurrencies.join(", ")}` });
+    }
+
+    // Upload images to storage service and normalize returned URL field
     const uploadedImgUrl = await Promise.all(
       req.files.map(async (elem) => {
-        return await sendFilesToStorage(elem.buffer, elem.originalname);
+        const result = await sendFilesToStorage(elem.buffer, elem.originalname);
+        // storage service might return { url } or { secure_url } or { Location }
+        const url = result?.url || result?.secure_url || result?.Location || null;
+        if (!url) throw new Error("Failed to upload image");
+        return url;
       })
     );
 
@@ -28,11 +49,11 @@ const productCreateController = async (req, res) => {
     }
 
     const newProduct = await ProdectModel.create({
-      user_id, // ✅ required field
-      title,
-      description,
-      price: { amount, currency },
-      images: uploadedImgUrl.map((elem) => elem.url),
+      Seller_id: user_id, // Use authenticated seller ID
+      title: String(title).trim(),
+      description: String(description).trim(),
+      price: { amount: parsedAmount, currency: finalCurrency },
+      images: uploadedImgUrl,
     });
 
     return res.status(201).json({
@@ -63,7 +84,8 @@ const prodectGetForSellerController = async (req, res) => {
     const user_id = req.seller?._id || req.user?._id;
     if (!user_id) return res.status(401).json({ message: "Unauthorized" });
 
-    const products = await ProdectModel.find({ user_id });
+    // query by Seller_id (matches product schema)
+    const products = await ProdectModel.find({ Seller_id: user_id });
     return res.status(200).json({
       message: "Seller products fetched successfully",
       products,
@@ -89,9 +111,13 @@ const prodectUpdateController = async (req, res) => {
     let uploadedImg = [];
 
     if (req.files && req.files.length > 0) {
+      // upload and normalize URLs like in create controller
       uploadedImg = await Promise.all(
         req.files.map(async (elem) => {
-          return await sendFilesToStorage(elem.buffer, elem.originalname);
+          const result = await sendFilesToStorage(elem.buffer, elem.originalname);
+          const url = result?.url || result?.secure_url || result?.Location || null;
+          if (!url) throw new Error("Failed to upload image");
+          return url;
         })
       );
     }
@@ -106,9 +132,7 @@ const prodectUpdateController = async (req, res) => {
           currency: currency || product.price.currency,
         },
         images:
-          uploadedImg.length > 0
-            ? uploadedImg.map((elem) => elem.url)
-            : product.images,
+          uploadedImg.length > 0 ? uploadedImg : product.images,
       },
       { new: true }
     );
@@ -166,7 +190,7 @@ const prodectDetailsController = async (req, res) => {
 };
 
 module.exports = {
-  prodectCreateController,
+  productCreateController,
   prodectGetController,
   prodectGetForSellerController,
   prodectUpdateController,

@@ -1,12 +1,9 @@
 import { createSlice } from "@reduxjs/toolkit";
 import { loginUser, registerUser, logoutUser, requestEmailChangeOtp, verifyEmailChangeOtp, changeEmail } from "../actons/userActions";
 
-const storedUserJson = localStorage.getItem("user");
-const storedUser = storedUserJson ? JSON.parse(storedUserJson) : null;
-
 const initialState = {
-  user: storedUser,
-  isAuthenticated: !!storedUser,
+  user: null,
+  isAuthenticated: false,
   loading: false,
   error: null,
 };
@@ -18,7 +15,6 @@ const userSlice = createSlice({
     logout: (state) => {
       state.user = null;
       state.isAuthenticated = false;
-      localStorage.removeItem("user");
     },
   },
   extraReducers: (builder) => {
@@ -32,9 +28,6 @@ const userSlice = createSlice({
         state.loading = false;
         state.user = action.payload.user;
         state.isAuthenticated = true;
-        try {
-          localStorage.setItem("user", JSON.stringify(action.payload.user));
-        } catch {}
       })
       .addCase(loginUser.rejected, (state, action) => {
         state.loading = false;
@@ -49,9 +42,6 @@ const userSlice = createSlice({
         state.loading = false;
         state.user = action.payload.user;
         state.isAuthenticated = true;
-        try {
-          localStorage.setItem("user", JSON.stringify(action.payload.user));
-        } catch {}
       })
       .addCase(registerUser.rejected, (state, action) => {
         state.loading = false;
@@ -61,7 +51,6 @@ const userSlice = createSlice({
       .addCase(logoutUser.fulfilled, (state) => {
         state.user = null;
         state.isAuthenticated = false;
-        localStorage.removeItem("user");
       })
       // 📧 Request email change OTP
       .addCase(requestEmailChangeOtp.pending, (state) => {
@@ -96,9 +85,7 @@ const userSlice = createSlice({
         state.loading = false;
         if (action.payload?.user) {
           state.user = action.payload.user;
-          try {
-            localStorage.setItem("user", JSON.stringify(action.payload.user));
-          } catch {}
+          state.user = action.payload.user;
         }
       })
       .addCase(changeEmail.rejected, (state, action) => {

@@ -37,8 +37,8 @@ const registerController = async(req, res) =>{
 
         res.cookie("token", token, {
             httpOnly: true,
-            secure: process.env.NODE_ENV === "production",
-            sameSite: process.env.NODE_ENV === "production" ? "none" : "lax",
+            // secure: process.env.NODE_ENV === "production",
+            // sameSite: process.env.NODE_ENV === "production" ? "none" : "lax",
             maxAge: 7 * 24 * 60 * 60 * 1000,
         });
 
@@ -50,8 +50,8 @@ const registerController = async(req, res) =>{
                 name: newUser.name,
                 email: newUser.email,
                 mobile: newUser.mobile,
-            },
-            token
+            }
+            ,token
         })
 
     } catch (error) {
@@ -94,8 +94,8 @@ const loginController = async(req,res) =>{
 
         res.cookie("token", token, {
             httpOnly: true,
-            secure: process.env.NODE_ENV === "production",
-            sameSite: process.env.NODE_ENV === "production" ? "none" : "lax",
+            // secure: process.env.NODE_ENV === "production",
+            // sameSite: process.env.NODE_ENV === "production" ? "none" : "lax",
             maxAge: 7 * 24 * 60 * 60 * 1000,
         });
 
@@ -116,33 +116,38 @@ const loginController = async(req,res) =>{
     }
 }
 
-const logoutController = async(req,res) =>{
-    try {
-    let token = req.cookies.token;
+const logoutController = async (req, res) => {
+  try {
+    const userToken = req.cookies?.token;
+    const sellerToken = req.cookies?.sellerToken;
 
-    if (!token) {
-      return res.status(404).json({
-        message: "Token not found",
-      });
+    // Blacklist tokens if they are present in the request
+    const logoutType = [];
+    if (userToken) {
+      try { await cacheInstance.set(userToken, "blacklisted"); } catch (e) { console.warn('Failed to blacklist user token', e); }
+      logoutType.push("User");
+    }
+    if (sellerToken) {
+      try { await cacheInstance.set(sellerToken, "blacklisted"); } catch (e) { console.warn('Failed to blacklist seller token', e); }
+      logoutType.push("Seller");
     }
 
-    let mama = await cacheInstance.set(token, "blacklisted");
+    // Always clear both cookies on response so client is instructed to remove them
+    // (this avoids relying on the request having sent both cookies)
+    res.clearCookie("token", { httpOnly: true, path: '/' });
+    res.clearCookie("sellerToken", { httpOnly: true, path: '/' });
 
-    res.clearCookie("token");
-
-    console.log(mama)
-
-    return res.status(200).json({
-      message: "User logged out",
-    });
+    // If no tokens were present, still return success (client-side cookies cleared)
+    const message = logoutType.length ? `${logoutType.join(" and ")} logged out successfully` : "Logged out successfully";
+    return res.status(200).json({ message });
   } catch (error) {
-    console.log("error in a logout",error);
+    console.error("Error in logout:", error);
     return res.status(500).json({
-      message: "internal server error",
-      error: error,
+      message: "Internal server error",
+      error,
     });
   }
-}
+};
 
 const forgetpassController = async (req, res) => {
   try {

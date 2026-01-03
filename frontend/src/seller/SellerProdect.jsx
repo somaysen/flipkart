@@ -1,23 +1,62 @@
 import React, { useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
-import { logoutSeller } from "../store/reducers/sellerSlice";
-import { fetchSellerProducts } from "../store/actons/productActions";
+import { fetchSellerProductsById } from "../store/actons/sellerAction";
 import SellerLogout from "./SellerLogout";
 
 function SellerDashboard() {
   const dispatch = useDispatch();
   const navigate = useNavigate();
   const { products, loading, error } = useSelector((s) => s.sellerProducts);
+  const { seller } = useSelector((s) => s.seller || {});
+  const [retryCount, setRetryCount] = React.useState(0);
 
   useEffect(() => {
-    dispatch(fetchSellerProducts());
-  }, [dispatch]);
+    let isMounted = true;
+    
+    const fetchProducts = async () => {
+      if (!seller?._id) return;
+      
+      try {
+        await dispatch(fetchSellerProductsById(seller._id)).unwrap();
+      } catch (err) {
+        if (err?.message?.includes('unauthorized') || err?.message?.includes('expired')) {
+          navigate('/seller/login');
+        } else if (isMounted && retryCount < 3) {
+          // Retry up to 3 times for other errors
+          setTimeout(() => setRetryCount(prev => prev + 1), 1000);
+        }
+      }
+    };
+
+    // If no seller session, redirect to login
+    if (!seller) {
+      navigate('/seller/login');
+      return;
+    }
+
+    fetchProducts();
+
+    // Cleanup function
+    return () => {
+      isMounted = false;
+    };
+  }, [dispatch, seller, navigate, retryCount]);
 
   return (
     <div className="min-h-screen bg-gray-50 p-6">
       <div className="flex justify-between items-center mb-6">
-        <h1 className="text-3xl font-bold">Seller Dashboard</h1>
+        <div>
+          <h1 className="text-3xl font-bold">Seller Dashboard</h1>
+          {seller && (
+            <div className="text-sm text-gray-600 mt-1">
+              <span className="font-medium mr-2">{seller.name}</span>
+              <span className="text-gray-400">·</span>
+              <span className="ml-2">{seller.email}</span>
+            </div>
+          )}
+        </div>
+
         <SellerLogout />
       </div>
 
@@ -39,10 +78,33 @@ function SellerDashboard() {
 
       <div className="bg-white rounded-lg shadow p-4">
         <h2 className="text-xl font-semibold mb-4">My Products</h2>
-        {loading && <p>Loading...</p>}
-        {error && <p className="text-red-600">{String(error)}</p>}
-        {!loading && products?.length === 0 && (
-          <p>No products yet. Create your first one!</p>
+        {loading && (
+          <div className="flex items-center justify-center py-4">
+            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+          </div>
+        )}
+        {error && (
+          <div className="bg-red-50 border border-red-200 rounded p-4 mb-4">
+            <p className="text-red-600 flex items-center">
+              <span className="mr-2">⚠️</span>
+              {typeof error === 'string' ? error : error?.message || 'Failed to load products'}
+            </p>
+            {retryCount < 3 && (
+              <p className="text-sm text-red-500 mt-1">Retrying... ({retryCount + 1}/3)</p>
+            )}
+          </div>
+        )}
+        {!loading && !error && products?.length === 0 && (
+          <div className="text-center py-8">
+            <p className="text-gray-500 mb-4">No products yet. Start by creating your first one!</p>
+            <Link
+              to="/seller/add-product"
+              className="inline-flex items-center text-blue-600 hover:text-blue-700"
+            >
+              <span className="mr-2">➕</span>
+              Add Your First Product
+            </Link>
+          </div>
         )}
         <ul className="divide-y">
           {products?.map((p) => (

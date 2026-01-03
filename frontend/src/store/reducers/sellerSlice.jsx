@@ -1,13 +1,14 @@
 // src/store/slices/sellerSlice.js
 import { createSlice } from "@reduxjs/toolkit";
-import { loginSeller, registerSeller } from "../actons/sellerAction";
+import { loginSeller, registerSeller, verifySellerSession } from "../actons/sellerAction";
 
 const initialState = {
   seller: null,
-  token: localStorage.getItem("sellerToken") || null,
+  token: null,
   loading: false,
   error: null,
   success: false,
+  isVerified: false,
 };
 
 const sellerSlice = createSlice({
@@ -18,12 +19,20 @@ const sellerSlice = createSlice({
       state.seller = null;
       state.token = null;
       state.success = false;
-      localStorage.removeItem("sellerToken");
+      state.isVerified = false;
+    },
+    clearSellerError: (state) => {
+      state.error = null;
+    },
+    resetSellerState: (state) => {
+      state.loading = false;
+      state.error = null;
+      state.success = false;
     },
   },
   extraReducers: (builder) => {
-    // ✅ Login
     builder
+      // 🟢 Login
       .addCase(loginSeller.pending, (state) => {
         state.loading = true;
         state.error = null;
@@ -33,24 +42,44 @@ const sellerSlice = createSlice({
         state.seller = action.payload.seller;
         state.token = action.payload.token;
         state.success = true;
-        if (action.payload?.token) {
-          try { localStorage.setItem("sellerToken", action.payload.token); } catch {}
-        }
+        state.isVerified = !!action.payload.seller?.isVerified;
       })
       .addCase(loginSeller.rejected, (state, action) => {
         state.loading = false;
         state.error = action.payload;
-      });
+      })
 
-    // ✅ Register
-    builder
+      // ✅ Verify session (on app start / route access)
+      .addCase(verifySellerSession.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(verifySellerSession.fulfilled, (state, action) => {
+        state.loading = false;
+        if (action.payload?.seller) {
+          state.seller = action.payload.seller;
+          state.isVerified = true;
+        }
+      })
+      .addCase(verifySellerSession.rejected, (state, action) => {
+        state.loading = false;
+        state.seller = null;
+        state.token = null;
+        state.isVerified = false;
+      })
+
+      // 🟣 Register
       .addCase(registerSeller.pending, (state) => {
         state.loading = true;
         state.error = null;
       })
-      .addCase(registerSeller.fulfilled, (state) => {
+      .addCase(registerSeller.fulfilled, (state, action) => {
         state.loading = false;
         state.success = true;
+        if (action.payload?.seller) {
+          state.seller = action.payload.seller;
+          state.isVerified = !!action.payload.seller?.isVerified;
+        }
       })
       .addCase(registerSeller.rejected, (state, action) => {
         state.loading = false;
@@ -59,5 +88,5 @@ const sellerSlice = createSlice({
   },
 });
 
-export const { logoutSeller } = sellerSlice.actions;
+export const { logoutSeller, clearSellerError, resetSellerState } = sellerSlice.actions;
 export default sellerSlice.reducer;

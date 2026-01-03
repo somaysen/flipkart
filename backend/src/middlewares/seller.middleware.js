@@ -14,7 +14,7 @@ const extractBearerToken = (req) => {
 // Main Seller Auth Middleware
 const sellerAuth = async (req, res, next) => {
   try {
-    const token = extractBearerToken(req) || req.cookies?.token;
+  const token = extractBearerToken(req) || req.cookies?.sellerToken;
     if (!token) {
       return res.status(401).json({ message: "Token not found" });
     }
