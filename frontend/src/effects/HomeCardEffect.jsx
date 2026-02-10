@@ -6,11 +6,11 @@ function HomeCardEffect() {
   const [currentIndex, setCurrentIndex] = useState(0);
 
   const images = [
-    "public/image/48fede5e1b0e76f7.webp",
-    "public/image/74f0ad81e44e6e6f.webp",
-    "public/image/78c3cfa787e8acbe.webp",
-    "public/image/adbc740e1c5ac19b.webp",
-    "public/image/1a4568bc09d24278.webp",
+    "https://ik.imagekit.io/wcerfpt9sm/Flipkart/74f0ad81e44e6e6f.webp",
+    "https://ik.imagekit.io/wcerfpt9sm/Flipkart/48fede5e1b0e76f7.webp",
+    "https://ik.imagekit.io/wcerfpt9sm/Flipkart/adbc740e1c5ac19b.webp",
+    "https://ik.imagekit.io/wcerfpt9sm/Flipkart/78c3cfa787e8acbe.webp",
+    "https://ik.imagekit.io/wcerfpt9sm/Flipkart/1a4568bc09d24278.webp",
   ];
 
   const nextSlide = () => {
