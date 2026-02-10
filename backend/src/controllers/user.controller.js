@@ -1,101 +1,41 @@
 import UserModel from "../models/user.model.js";
+import ProductModel from "../models/product.model.js";
 import cacheInstance from "../services/cache.service.js";
-import jwt from "jsonwebtoken";
 import sendMail from "../services/mail.service.js";
 import resetPassTemplate from "../utils/email.template.js";
-import ProductModel from "../models/product.model.js";
-import bcrypt from "bcrypt";
+import crypto from "crypto";
 
 class UserController {
+  /* ================= REGISTER ================= */
   register = async (req, res) => {
     try {
       const { name, email, password, mobile } = req.body;
 
       if (!name || !email || !password || !mobile) {
-        return res.status(404).json({
-          message: "All fields are required",
-        });
+        return res.status(400).json({ message: "All fields are required" });
       }
 
       const existingUser = await UserModel.findOne({ email });
-
       if (existingUser) {
-        return res.status(422).json({
-          message: "User already exists",
-        });
+        return res.status(422).json({ message: "User already exists" });
       }
 
-      const newUser = await UserModel.create({
+      const user = await UserModel.create({
         name,
         email,
         password,
         mobile,
       });
 
-      const token = newUser.generateToken();
-
-      res.cookie("token", token, {
-        httpOnly: true,
-        // secure: process.env.NODE_ENV === "production",
-        // sameSite: process.env.NODE_ENV === "production" ? "none" : "lax",
-        maxAge: 7 * 24 * 60 * 60 * 1000,
-      });
-
-      return res.status(201).json({
-        message: "User created successfully",
-        user: {
-          _id: newUser._id,
-          name: newUser.name,
-          email: newUser.email,
-          mobile: newUser.mobile,
-        },
-        token,
-      });
-    } catch (error) {
-      console.error("Error in registerController:", error);
-      return res.status(500).json({
-        message: "Internal server error",
-        error: error.message,
-      });
-    }
-  };
-
-  login = async (req, res) => {
-    try {
-      const { email, password } = req.body;
-
-      if (!email || !password) {
-        return res.status(400).json({
-          message: "All fields are required",
-        });
-      }
-
-      const user = await UserModel.findOne({ email });
-      if (!user) {
-        return res.status(404).json({
-          message: "User not found",
-        });
-      }
-
-      const userpass = await user.comparePass(password);
-
-      if (!userpass) {
-        return res.status(400).json({
-          message: "Invalid credentials",
-        });
-      }
-
       const token = user.generateToken();
 
       res.cookie("token", token, {
         httpOnly: true,
-        // secure: process.env.NODE_ENV === "production",
-        // sameSite: process.env.NODE_ENV === "production" ? "none" : "lax",
         maxAge: 7 * 24 * 60 * 60 * 1000,
       });
 
-      return res.status(200).json({
-        message: "User logged in successfully",
+      return res.status(201).json({
+        message: "User registered successfully",
         user: {
           _id: user._id,
           name: user.name,
@@ -105,58 +45,75 @@ class UserController {
         token,
       });
     } catch (error) {
-      console.error("Internal server error in loginController:", error);
-      return res.status(500).json({ message: "Internal server error" });
+      console.error("Register error:", error);
+      res.status(500).json({ message: "Internal server error" });
     }
   };
 
+  /* ================= LOGIN ================= */
+  login = async (req, res) => {
+    try {
+      const { email, password } = req.body;
+
+      if (!email || !password) {
+        return res.status(400).json({ message: "All fields are required" });
+      }
+
+      const user = await UserModel.findOne({ email });
+      if (!user) {
+        return res.status(404).json({ message: "User not found" });
+      }
+
+      const isMatch = await user.comparePass(password);
+      if (!isMatch) {
+        return res.status(400).json({ message: "Invalid credentials" });
+      }
+
+      const token = user.generateToken();
+
+      res.cookie("token", token, {
+        httpOnly: true,
+        maxAge: 7 * 24 * 60 * 60 * 1000,
+      });
+
+      res.status(200).json({
+        message: "Login successful",
+        user: {
+          _id: user._id,
+          name: user.name,
+          email: user.email,
+          mobile: user.mobile,
+        },
+        token,
+      });
+    } catch (error) {
+      console.error("Login error:", error);
+      res.status(500).json({ message: "Internal server error" });
+    }
+  };
+
+  /* ================= LOGOUT ================= */
   logout = async (req, res) => {
     try {
-      const userToken = req.cookies?.token;
-      const sellerToken = req.cookies?.sellerToken;
+      const token = req.cookies?.token;
 
-      // Blacklist tokens if they are present in the request
-      const logoutType = [];
-      if (userToken) {
-        try {
-          await cacheInstance.set(userToken, "blacklisted");
-        } catch (e) {
-          console.warn("Failed to blacklist user token", e);
-        }
-        logoutType.push("User");
-      }
-      if (sellerToken) {
-        try {
-          await cacheInstance.set(sellerToken, "blacklisted");
-        } catch (e) {
-          console.warn("Failed to blacklist seller token", e);
-        }
-        logoutType.push("Seller");
+      if (token) {
+        await cacheInstance.set(token, "blacklisted");
       }
 
-      // Always clear both cookies on response so client is instructed to remove them
-      // (this avoids relying on the request having sent both cookies)
       res.clearCookie("token", { httpOnly: true, path: "/" });
-      res.clearCookie("sellerToken", { httpOnly: true, path: "/" });
 
-      // If no tokens were present, still return success (client-side cookies cleared)
-      const message = logoutType.length
-        ? `${logoutType.join(" and ")} logged out successfully`
-        : "Logged out successfully";
-      return res.status(200).json({ message });
+      res.status(200).json({ message: "Logged out successfully" });
     } catch (error) {
-      console.error("Error in logout:", error);
-      return res.status(500).json({
-        message: "Internal server error",
-        error,
-      });
+      console.error("Logout error:", error);
+      res.status(500).json({ message: "Internal server error" });
     }
   };
 
+  /* ================= FORGET PASSWORD ================= */
   forgetPassword = async (req, res) => {
     try {
       const { email } = req.body;
-
       if (!email) {
         return res.status(400).json({ message: "Email is required" });
       }
@@ -166,198 +123,196 @@ class UserController {
         return res.status(404).json({ message: "User not found" });
       }
 
-      // ✅ Create JWT token valid for 10 minutes
-      const token = jwt.sign({ id: user._id }, process.env.JWT_SECRET, {
-        expiresIn: "10m",
-      });
+      // Generate reset token
+      const resetToken = crypto.randomBytes(32).toString("hex");
 
-      // ✅ Link to frontend reset page (strip trailing slash to avoid double //)
-      const FRONTEND_URL =
-        (process.env.FRONTEND_URL || "http://localhost:5174").replace(/\/$/, "");
-      const resetLink = `${FRONTEND_URL}/reset-password/${token}`;
+      // Hash token
+      const hashedToken = crypto
+        .createHash("sha256")
+        .update(resetToken)
+        .digest("hex");
 
-      // ✅ Send email
+      // Save token & expiry
+      user.resetPasswordToken = hashedToken;
+      user.resetPasswordExpire = Date.now() + 10 * 60 * 1000;
+
+      await user.save({ validateBeforeSave: false });
+
+      const FRONTEND_URL = (process.env.FRONTEND_URL || "http://localhost:5174").replace(/\/$/, "");
+      const resetLink = `${FRONTEND_URL}/reset-password/${resetToken}`;
+
       const emailTemplate = resetPassTemplate(user.name, resetLink);
       await sendMail(user.email, "Reset Your Password", emailTemplate);
 
-      return res.status(200).json({
-        message: "Reset password link sent to your email.",
+      res.status(200).json({
+        message: "Reset password link sent to your email",
       });
     } catch (error) {
-      console.error("Error in forget password controller:", error.message);
-      return res.status(500).json({ message: "Internal server error" });
+      console.error("Forget password error:", error);
+      res.status(500).json({ message: "Internal server error" });
     }
   };
 
-  verifyResetToken = async (req, res) => {
-    try {
-      const { token } = req.params;
-
-      if (!token) {
-        return res.status(400).json({ message: "Token not found" });
-      }
-
-      const decoded = jwt.verify(token, process.env.JWT_SECRET);
-
-      return res.status(200).json({
-        message: "Token verified successfully",
-        userId: decoded.id,
-      });
-    } catch (error) {
-      console.error("Invalid or expired token:", error.message);
-      return res.status(401).json({
-        message: "Invalid or expired token. Please request a new reset link.",
-      });
-    }
-  };
-
+  /* ================= RESET PASSWORD ================= */
   resetPassword = async (req, res) => {
     try {
       const { token, newPassword } = req.body;
 
       if (!token || !newPassword) {
-        return res
-          .status(400)
-          .json({ message: "Token and new password are required" });
+        return res.status(400).json({
+          message: "Token and new password are required",
+        });
       }
 
-      // ✅ Verify token
-      const decoded = jwt.verify(token, process.env.JWT_SECRET);
+      const hashedToken = crypto
+        .createHash("sha256")
+        .update(token)
+        .digest("hex");
 
-      // ✅ Hash password
-      const hashedPassword = await bcrypt.hash(newPassword, 10);
-
-      // ✅ Update user password
-      await UserModel.findByIdAndUpdate(decoded.id, { password: hashedPassword });
-
-      return res.status(200).json({ message: "Password reset successfully!" });
-    } catch (error) {
-      console.error("Error in reset password controller:", error.message);
-      return res.status(401).json({
-        message: "Invalid or expired token. Please request a new reset link.",
+      const user = await UserModel.findOne({
+        resetPasswordToken: hashedToken,
+        resetPasswordExpire: { $gt: Date.now() },
       });
+
+      if (!user) {
+        return res.status(401).json({
+          message: "Invalid or expired reset token",
+        });
+      }
+
+      user.password = newPassword;
+      user.resetPasswordToken = undefined;
+      user.resetPasswordExpire = undefined;
+
+      await user.save();
+
+      res.status(200).json({ message: "Password reset successful" });
+    } catch (error) {
+      console.error("Reset password error:", error);
+      res.status(500).json({ message: "Internal server error" });
     }
   };
 
+  /* ================= VERIFY RESET TOKEN ================= */
+  verifyResetToken = async (req, res) => {
+    try {
+      const { token } = req.params;
+      if (!token) {
+        return res.status(400).json({ message: "Token is required" });
+      }
+
+      const hashedToken = crypto
+        .createHash("sha256")
+        .update(token)
+        .digest("hex");
+
+      const user = await UserModel.findOne({
+        resetPasswordToken: hashedToken,
+        resetPasswordExpire: { $gt: Date.now() },
+      });
+
+      if (!user) {
+        return res
+          .status(401)
+          .json({ message: "Invalid or expired reset token" });
+      }
+
+      return res.status(200).json({
+        message: "Token verified successfully",
+        userId: user._id,
+      });
+    } catch (error) {
+      console.error("Verify reset token error:", error);
+      return res.status(500).json({ message: "Internal server error" });
+    }
+  };
+
+  /* ================= UPDATE USER ================= */
   update = async (req, res) => {
     try {
-      const authenticatedUser = req.user;
-      if (!authenticatedUser?._id) {
+      const userId = req.user?._id;
+      if (!userId) {
         return res.status(401).json({ message: "Unauthorized" });
       }
 
-      const userId = authenticatedUser._id;
-      const { name, mobile, email, password } = req.body || {};
+      const { name, email, mobile, password } = req.body;
 
-      // Nothing to update
-      if (!name && !mobile && !email && !password) {
-        return res.status(400).json({ message: "No fields to update" });
-      }
-
-      // Load user document to leverage pre-save hooks (e.g., password hashing)
       const user = await UserModel.findById(userId);
       if (!user) {
         return res.status(404).json({ message: "User not found" });
       }
 
-      // Email change: ensure uniqueness
       if (email && email !== user.email) {
-        const existing = await UserModel.findOne({ email });
-        if (existing) {
+        const exists = await UserModel.findOne({ email });
+        if (exists) {
           return res.status(422).json({ message: "Email already in use" });
         }
         user.email = email;
       }
 
-      if (typeof name === "string" && name.trim()) {
-        user.name = name.trim();
-      }
-
-      if (typeof mobile !== "undefined") {
-        user.mobile = mobile;
-      }
-
-      if (typeof password === "string") {
-        if (password.length < 8) {
-          return res
-            .status(400)
-            .json({ message: "Password must be at least 8 characters" });
-        }
-        user.password = password; // will be hashed by pre-save hook
-      }
+      if (name) user.name = name;
+      if (mobile) user.mobile = mobile;
+      if (password) user.password = password;
 
       await user.save();
 
-      return res.status(200).json({
+      res.status(200).json({
         message: "User updated successfully",
-        user: {
-          _id: user._id,
-          name: user.name,
-          email: user.email,
-          mobile: user.mobile,
-          isAdmin: user.isAdmin,
-        },
+        user,
       });
     } catch (error) {
-      console.error("Error in userUpdatedcontroller:", error);
-      return res
-        .status(500)
-        .json({ message: "Internal server error", error: error.message });
+      console.error("Update error:", error);
+      res.status(500).json({ message: "Internal server error" });
     }
   };
 
+  /* ================= ADD TO CART ================= */
   addToCart = async (req, res) => {
     try {
       const { productId } = req.params;
-      const quantity = Number(req.body?.quantity);
+      const quantity = Number(req.body.quantity);
 
-      if (!productId)
-        return res.status(400).json({ message: "productId is required" });
-      if (quantity < 1)
-        return res
-          .status(400)
-          .json({ message: "quantity must be at least 1" });
+      if (!productId || quantity < 1) {
+        return res.status(400).json({ message: "Invalid input" });
+      }
 
-      const product = req.product || (await ProductModel.findById(productId));
-      if (!product) return res.status(404).json({ message: "Product not found" });
+      const product = await ProductModel.findById(productId);
+      if (!product) {
+        return res.status(404).json({ message: "Product not found" });
+      }
 
-      const user = await UserModel.findById(req.user?._id);
-      if (!user)
-        return res
-          .status(401)
-          .json({ message: "User not found or unauthorized" });
+      const user = await UserModel.findById(req.user._id);
+      if (!user) {
+        return res.status(401).json({ message: "Unauthorized" });
+      }
 
-      const amount = Number(product.price?.amount ?? product.amount ?? 0);
-      const currency = product.price?.currency || product.currency || "INR";
-      if (amount <= 0)
-        return res.status(400).json({ message: "Invalid product price" });
+      const price = product.price?.amount || product.amount;
 
-      user.cart ||= [];
-
-      const existingItem = user.cart.find(
+      const item = user.cart.find(
         (i) => i.product.toString() === productId
       );
-      if (existingItem) {
-        existingItem.quantity += quantity;
-        existingItem.total = existingItem.quantity * amount;
+
+      if (item) {
+        item.quantity += quantity;
+        item.total = item.quantity * price;
       } else {
         user.cart.push({
           product: productId,
           quantity,
-          price: { amount, currency },
-          total: quantity * amount,
+          price: product.price,
+          total: quantity * price,
         });
       }
 
       await user.save();
-      res
-        .status(200)
-        .json({ message: "Product added to cart", cart: user.cart });
-    } catch (err) {
-      console.error("❌ addToCartController error:", err);
-      res
-        .status(500)
-        .json({ message: "Internal server error", error: err.message });
+
+      res.status(200).json({
+        message: "Product added to cart",
+        cart: user.cart,
+      });
+    } catch (error) {
+      console.error("Add to cart error:", error);
+      res.status(500).json({ message: "Internal server error" });
     }
   };
 }
@@ -368,7 +323,7 @@ export const registerController = userController.register;
 export const loginController = userController.login;
 export const logoutController = userController.logout;
 export const forgetpassController = userController.forgetPassword;
-export const addToCartController = userController.addToCart;
-export const userUpdatedcontroller = userController.update;
 export const resetPasswordController = userController.resetPassword;
 export const verifyResetToken = userController.verifyResetToken;
+export const userUpdatedcontroller = userController.update;
+export const addToCartController = userController.addToCart;
