@@ -150,7 +150,10 @@ class UserController {
 
   resetPassword = async (req, res) => {
     try {
-      const { token, newPassword } = req.body;
+      // accept token from body (preferred), query, or params (covers proxy rewrites)
+      const token =
+        req.body?.token || req.query?.token || req.params?.token || null;
+      const { newPassword } = req.body || {};
 
       if (!token || !newPassword) {
         return res.status(400).json({
@@ -190,7 +193,9 @@ class UserController {
   /* ================= VERIFY RESET TOKEN ================= */
   verifyResetToken = async (req, res) => {
     try {
-      const { token } = req.params;
+      // accept token from params, query, or body
+      const token =
+        req.params?.token || req.query?.token || req.body?.token || null;
       if (!token) {
         return res.status(400).json({ message: "Token is required" });
       }
