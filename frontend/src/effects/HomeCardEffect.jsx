@@ -6,11 +6,11 @@ function HomeCardEffect() {
   const [currentIndex, setCurrentIndex] = useState(0);
 
   const images = [
-    "src/image/48fede5e1b0e76f7.webp",
-    "src/image/74f0ad81e44e6e6f.webp",
-    "src/image/78c3cfa787e8acbe.webp",
-    "src/image/adbc740e1c5ac19b.webp",
-    "src/image/1a4568bc09d24278.webp",
+    "public/image/48fede5e1b0e76f7.webp",
+    "public/image/74f0ad81e44e6e6f.webp",
+    "public/image/78c3cfa787e8acbe.webp",
+    "public/image/adbc740e1c5ac19b.webp",
+    "public/image/1a4568bc09d24278.webp",
   ];
 
   const nextSlide = () => {
