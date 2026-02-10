@@ -11,8 +11,11 @@ function Forgotpas() {
     setMessage("");
 
     try {
-      const baseUrl = import.meta?.env?.VITE_API_URL || "http://localhost:3000";
-      const res = await fetch(`${baseUrl}/api/user/forget-password`, {
+      const baseUrl =
+        (typeof import.meta?.env?.VITE_API_URL === "string" &&
+          import.meta.env.VITE_API_URL.replace(/\/$/, "")) ||
+        `${window.location.origin}/api`;
+      const res = await fetch(`${baseUrl}/user/forget-password`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ email: String(email).trim().toLowerCase() }),
