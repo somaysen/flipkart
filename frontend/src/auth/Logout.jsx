@@ -9,8 +9,7 @@ function Logout() {
   const dispatch = useDispatch()
 
   useEffect(() => {
-    // Call backend logout to blacklist server-side cookie token as well
-    ;(async () => {
+    (async () => {
       try {
         await dispatch(logoutUser()).unwrap();
       } catch (e) {
@@ -26,7 +25,7 @@ function Logout() {
   return (
     <div className="min-h-[60vh] flex items-center justify-center">
       <div className="p-6 bg-white/90 rounded shadow">
-        <p className="text-gray-700">Signing out…</p>
+        <p className="text-gray-700">Signing out...</p>
       </div>
     </div>
   )

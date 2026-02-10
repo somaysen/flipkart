@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import api from "../api/axiosInstance";
 
 function Forgotpas() {
   const [email, setEmail] = useState("");
@@ -11,21 +12,13 @@ function Forgotpas() {
     setMessage("");
 
     try {
-      const baseUrl =
-        (typeof import.meta?.env?.VITE_API_URL === "string" &&
-          import.meta.env.VITE_API_URL.replace(/\/$/, "")) ||
-        `${window.location.origin}/api`;
-      const res = await fetch(`${baseUrl}/user/forget-password`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email: String(email).trim().toLowerCase() }),
+      const { data } = await api.post("/user/forget-password", {
+        email: String(email).trim().toLowerCase(),
       });
-
-      const data = await res.json();
-      if (res.ok) setMessage(data.message);
-      else setError(data.message);
+      setMessage(data?.message || "Reset link sent.");
     } catch (err) {
-      setError("Something went wrong. Try again.");
+      const apiMessage = err?.response?.data?.message;
+      setError(apiMessage || "Something went wrong. Try again.");
     }
   };
 

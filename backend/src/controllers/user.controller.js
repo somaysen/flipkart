@@ -171,8 +171,9 @@ class UserController {
         expiresIn: "10m",
       });
 
-      // ✅ Link to frontend reset page
-      const FRONTEND_URL = process.env.FRONTEND_URL || "http://localhost:5174";
+      // ✅ Link to frontend reset page (strip trailing slash to avoid double //)
+      const FRONTEND_URL =
+        (process.env.FRONTEND_URL || "http://localhost:5174").replace(/\/$/, "");
       const resetLink = `${FRONTEND_URL}/reset-password/${token}`;
 
       // ✅ Send email

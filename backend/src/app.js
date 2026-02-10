@@ -12,9 +12,13 @@ app.use(express.json());
 app.use(cookieParser());
 
 // CORS Configuration for both development and production
+// normalize URLs to avoid trailing slash mismatches in CORS checks
+const normalizeUrl = (url) =>
+	typeof url === "string" ? url.replace(/\/$/, "") : url;
+
 const allowedOrigins = [
-	process.env.FRONTEND_URL,
-	process.env.BACKEND_URL,
+	normalizeUrl(process.env.FRONTEND_URL),
+	normalizeUrl(process.env.BACKEND_URL),
 	"http://localhost:3000",
 	"http://localhost:5173",
 	"http://127.0.0.1:5173",

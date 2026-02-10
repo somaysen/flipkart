@@ -10,7 +10,7 @@ import {
 const router = express.Router();
 
 // All routes require authentication
-router.post("/", authMiddleware, addToCart);
+router.post("/addToCart", authMiddleware, addToCart);
 router.get("/", authMiddleware, getCart);
 router.put("/:id", authMiddleware, updateCartItem);
 router.delete("/:id", authMiddleware, deleteCartItem);

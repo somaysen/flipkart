@@ -37,17 +37,10 @@ function Router() {
             </UnAuthRoute>
               } />
 
-          <Route path="/forgot" element={
-            <UnAuthRoute>
-              <Forgotpas />
-            </UnAuthRoute>
-            } />
+          <Route path="/forgot" element={<Forgotpas />} />
 
-          <Route path="/reset-password/:token" element={
-            <UnAuthRoute>
-              <Forgot />
-            </UnAuthRoute>
-            } />
+          {/* Allow reset page even if user is logged in */}
+          <Route path="/reset-password/:token" element={<Forgot />} />
 
           <Route path="/change-email" element={
             <AuthRoute>

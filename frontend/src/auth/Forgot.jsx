@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { useParams } from "react-router-dom";
+import api from "../api/axiosInstance";
 
 function ResetPassword() {
   const { token } = useParams();
@@ -10,12 +11,14 @@ function ResetPassword() {
 
   // Verify token when page loads
   useEffect(() => {
-    fetch(`http://localhost:3000/api/user/reset-password/${token}`)
-      .then((res) => res.json())
-      .then((data) => {
-        if (!data.userId) throw new Error(data.message);
+    api
+      .get(`/user/reset-password/${token}`)
+      .then(({ data }) => {
+        if (!data?.userId) throw new Error(data?.message || "Invalid token");
       })
-      .catch((err) => setError(err.message));
+      .catch((err) =>
+        setError(err?.response?.data?.message || err?.message || "Invalid link")
+      );
   }, [token]);
 
   const handleSubmit = async (e) => {
@@ -26,17 +29,15 @@ function ResetPassword() {
     }
 
     try {
-      const res = await fetch("http://localhost:3000/api/user/reset-password", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ token, newPassword: password }),
+      const { data } = await api.post("/user/reset-password", {
+        token,
+        newPassword: password,
       });
-
-      const data = await res.json();
-      if (res.ok) setMessage(data.message);
-      else setError(data.message);
+      setMessage(data?.message || "Password reset successfully");
     } catch (err) {
-      setError("Something went wrong. Try again.");
+      setError(
+        err?.response?.data?.message || "Something went wrong. Try again."
+      );
     }
   };
 
