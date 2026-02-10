@@ -1,6 +1,6 @@
-const mongoose = require("mongoose");
-const bcrypt = require("bcrypt");
-const jwt = require("jsonwebtoken");
+import mongoose from "mongoose";
+import bcrypt from "bcrypt";
+import jwt from "jsonwebtoken";
 
 const sellerSchema = new mongoose.Schema(
   {
@@ -67,4 +67,4 @@ sellerSchema.methods.generateToken = function (expiresIn = "1d") {
   );
 };
 
-module.exports = mongoose.model("Seller", sellerSchema);
+export default mongoose.model("Seller", sellerSchema);

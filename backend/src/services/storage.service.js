@@ -1,4 +1,4 @@
-const ImageKit = require("imagekit"); // ✅ Correct import
+import ImageKit from "imagekit"; // ✅ Correct import
 
 const storageInstance = new ImageKit({
   privateKey: process.env.IMAGEKIT_PRIVATEKEY,
@@ -21,4 +21,4 @@ const sendFilesToStorage = async (file, fileName) => {
   }
 };
 
-module.exports = sendFilesToStorage;
+export default sendFilesToStorage;

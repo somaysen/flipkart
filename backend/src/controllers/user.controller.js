@@ -1,10 +1,10 @@
-const UserModel = require("../models/user.model")
-const cacheInstance = require("../services/cache.service");
-const jwt = require("jsonwebtoken");
-const sendMail = require("../services/mail.service");
-const resetPassTemplate = require("../utils/email.template");
-const ProductModel = require("../models/product.model");
-const bcrypt = require('bcrypt')
+import UserModel from "../models/user.model.js";
+import cacheInstance from "../services/cache.service.js";
+import jwt from "jsonwebtoken";
+import sendMail from "../services/mail.service.js";
+import resetPassTemplate from "../utils/email.template.js";
+import ProductModel from "../models/product.model.js";
+import bcrypt from 'bcrypt';
 
 const registerController = async(req, res) =>{
     
@@ -339,7 +339,7 @@ const addToCartController = async (req, res) => {
 };
 
 
-module.exports = {
+export {
   registerController,
   loginController,
   logoutController,

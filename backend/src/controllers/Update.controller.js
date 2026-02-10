@@ -1,5 +1,5 @@
-const UserModel = require("../models/user.model");
-const sendMail = require("../services/mail.service"); // adjust path as needed
+import UserModel from "../models/user.model.js";
+import sendMail from "../services/mail.service.js"; // adjust path as needed
 const otpStore = {};
 
 const sendEmailOtpController = async (req, res) => {
@@ -129,4 +129,4 @@ const changeEmailController = async (req, res) => {
   
   
 
-module.exports = {sendEmailOtpController,verifyEmailOtpController,changeEmailController}
+export {sendEmailOtpController,verifyEmailOtpController,changeEmailController};

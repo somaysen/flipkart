@@ -1,9 +1,15 @@
-const app = require("./src/app")
-require('dotenv').config()
-const connectDB = require('./src/db/db')
-const cacheInstance = require("./src/services/cache.service")
-const path = require("path");
-const express = require("express")
+import dotenv from 'dotenv';
+import app from "./src/app.js";
+import connectDB from './src/db/db.js';
+import cacheInstance from "./src/services/cache.service.js";
+import path from "path";
+import express from "express";
+import { fileURLToPath } from 'url';
+
+dotenv.config();
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
 app.set("view engine", "ejs");
 app.set("views", path.join(__dirname, "src/views"));
@@ -34,3 +40,5 @@ app.listen(PORT, () => {
 }).on('error', (error) => {
     console.error('Error starting server:', error);
 });
+
+export default app;

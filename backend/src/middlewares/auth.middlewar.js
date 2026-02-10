@@ -1,7 +1,7 @@
-const UserModel = require("../models/user.model");
-const cacheInstance = require("../services/cache.service");
-const jwt = require("jsonwebtoken");
-const ProductModel = require("../models/product.model");
+import UserModel from "../models/user.model.js";
+import cacheInstance from "../services/cache.service.js";
+import jwt from "jsonwebtoken";
+import ProductModel from "../models/product.model.js";
 
 const authMiddleware = async (req, res, next) => {
   
@@ -64,4 +64,4 @@ const AddToCartMiddleware = async (req, res, next) => {
 }
 
 
-module.exports = {authMiddleware,AddToCartMiddleware};
+export { authMiddleware, AddToCartMiddleware };

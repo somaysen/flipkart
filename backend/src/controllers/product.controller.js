@@ -1,6 +1,6 @@
-const ProdectModel = require("../models/product.model");
-const sendFilesToStorage = require("../services/storage.service");
-const mongoose = require('mongoose')
+import ProdectModel from "../models/product.model.js";
+import sendFilesToStorage from "../services/storage.service.js";
+import mongoose from 'mongoose';
 
 // Create a Prodect
 
@@ -189,7 +189,7 @@ const prodectDetailsController = async (req, res) => {
   }
 };
 
-module.exports = {
+export {
   productCreateController,
   prodectGetController,
   prodectGetForSellerController,

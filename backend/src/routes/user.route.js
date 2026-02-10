@@ -1,17 +1,17 @@
-const express = require("express");
-const { registerController,
+import express from "express";
+import { registerController,
   loginController,
   logoutController,
   forgetpassController,
   addToCartController,
   userUpdatedcontroller, 
   verifyResetToken,
-  resetPasswordController} = require("../controllers/user.controller");
-const { authMiddleware, AddToCartMiddleware } = require("../middlewares/auth.middlewar");
+  resetPasswordController} from "../controllers/user.controller.js";
+import { authMiddleware, AddToCartMiddleware } from "../middlewares/auth.middlewar.js";
 const router = express.Router();
 
 
-const {sendEmailOtpController,verifyEmailOtpController,changeEmailController} = require("../controllers/Update.controller")
+import {sendEmailOtpController,verifyEmailOtpController,changeEmailController} from "../controllers/Update.controller.js";
 
 router.post("/register",registerController);
 router.post("/login",loginController);
@@ -39,4 +39,4 @@ router.post("/change-email/:id", authMiddleware, changeEmailController);
 
 
 
-module.exports = router;
+export default router;

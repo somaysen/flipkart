@@ -7,4 +7,4 @@ const resetPassTemplate = (name, link) => `
   <p>This link will expire in 10 minutes.</p>
 `;
 
-module.exports = resetPassTemplate;
+export default resetPassTemplate;

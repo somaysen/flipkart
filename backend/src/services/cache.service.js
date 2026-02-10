@@ -1,6 +1,7 @@
-const Redis = require("ioredis");
-require("dotenv").config();
+import Redis from "ioredis";
+import dotenv from "dotenv";
 
+dotenv.config();
 
 const cacheInstance = new Redis({
   host: process.env.REDIS_URL,
@@ -8,4 +9,4 @@ const cacheInstance = new Redis({
   password: process.env.REDIS_PASSWORD,
 });
 
-module.exports = cacheInstance;
+export default cacheInstance;

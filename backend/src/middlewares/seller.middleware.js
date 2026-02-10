@@ -1,6 +1,6 @@
-const jwt = require("jsonwebtoken");
-const sellerModel = require("../models/seller.model");
-const cacheInstance = require("../services/cache.service");
+import jwt from "jsonwebtoken";
+import sellerModel from "../models/seller.model.js";
+import cacheInstance from "../services/cache.service.js";
 
 // Helper: Extract token from Authorization header
 const extractBearerToken = (req) => {
@@ -52,4 +52,4 @@ const sellerAuth = async (req, res, next) => {
   }
 };
 
-module.exports = sellerAuth;
+export default sellerAuth;

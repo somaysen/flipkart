@@ -1,17 +1,17 @@
-const express = require("express");
+import express from "express";
 const router = express.Router();
-const upload = require("../db/multer");
-const sellerAuth = require("../middlewares/seller.middleware");
-const {authMiddleware} = require("../middlewares/auth.middlewar");
+import upload from "../db/multer.js";
+import sellerAuth from "../middlewares/seller.middleware.js";
+import {authMiddleware} from "../middlewares/auth.middlewar.js";
 
-const {
+import {
   productCreateController,
   prodectGetController,
   prodectGetForSellerController,
   prodectUpdateController,
   prodectDeleteController,
   prodectDetailsController,
-} = require("../controllers/product.controller");
+} from "../controllers/product.controller.js";
 
 
 router.post(
@@ -27,4 +27,4 @@ router.patch("/products/:_id", sellerAuth, upload.array("images", 5), prodectUpd
 router.delete("/products/:_id", sellerAuth, prodectDeleteController);//IT IS WORKING for seller only
 router.get("/details/:id",authMiddleware , prodectDetailsController);//IT IS WORKING for both seller and user 
 
-module.exports = router;
+export default router;

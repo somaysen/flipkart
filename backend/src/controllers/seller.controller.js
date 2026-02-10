@@ -1,5 +1,5 @@
-const productModel = require("../models/product.model"); // import your Product model
-const sellerModel = require("../models/seller.model");
+import productModel from "../models/product.model.js"; // import your Product model
+import sellerModel from "../models/seller.model.js";
 
 async function registerSeller(req, res) {
   try {
@@ -162,4 +162,4 @@ async function verifySeller(req, res) {
   }
 }
 
-module.exports = { registerSeller, loginSeller, logoutSeller, sellerProducts, verifySeller };
+export { registerSeller, loginSeller, logoutSeller, sellerProducts, verifySeller };
