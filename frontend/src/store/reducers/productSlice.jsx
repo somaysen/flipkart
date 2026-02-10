@@ -1,6 +1,6 @@
 // productSlice.js
 import { createSlice } from "@reduxjs/toolkit";
-import { fetchProducts } from "../actons/productActions";
+import { fetchProducts } from "../actions/productActions";
 
 const productSlice = createSlice({
   name: "products",
@@ -9,7 +9,11 @@ const productSlice = createSlice({
     loading: false,
     error: null,
   },
-  reducers: {},
+  reducers: {
+    clearProductError: (state) => {
+      state.error = null;
+    },
+  },
   extraReducers: (builder) => {
     builder
       .addCase(fetchProducts.pending, (state) => {
@@ -26,4 +30,5 @@ const productSlice = createSlice({
   },
 });
 
+export const { clearProductError } = productSlice.actions;
 export default productSlice.reducer;

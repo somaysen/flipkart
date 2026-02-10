@@ -1,5 +1,5 @@
 import { createSlice } from "@reduxjs/toolkit";
-import { loginUser, registerUser, logoutUser, requestEmailChangeOtp, verifyEmailChangeOtp, changeEmail } from "../actons/userActions";
+import { loginUser, registerUser, logoutUser, requestEmailChangeOtp, verifyEmailChangeOtp, changeEmail } from "../actions/userActions";
 
 const initialState = {
   user: null,
@@ -15,6 +15,9 @@ const userSlice = createSlice({
     logout: (state) => {
       state.user = null;
       state.isAuthenticated = false;
+    },
+    clearUserError: (state) => {
+      state.error = null;
     },
   },
   extraReducers: (builder) => {
@@ -48,7 +51,12 @@ const userSlice = createSlice({
         state.error = action.payload?.message || "Register failed";
       })
       // 🔴 Logout (async)
+      .addCase(logoutUser.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
       .addCase(logoutUser.fulfilled, (state) => {
+        state.loading = false;
         state.user = null;
         state.isAuthenticated = false;
       })
@@ -85,8 +93,11 @@ const userSlice = createSlice({
         state.loading = false;
         if (action.payload?.user) {
           state.user = action.payload.user;
-          state.user = action.payload.user;
         }
+      })
+      .addCase(logoutUser.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload?.message || "Logout failed";
       })
       .addCase(changeEmail.rejected, (state, action) => {
         state.loading = false;
@@ -95,5 +106,5 @@ const userSlice = createSlice({
   },
 });
 
-export const { logout } = userSlice.actions;
+export const { logout, clearUserError } = userSlice.actions;
 export default userSlice.reducer;

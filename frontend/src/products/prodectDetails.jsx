@@ -1,13 +1,16 @@
 import React, { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
-import { useParams } from "react-router-dom";
-import { fetchProductDetails } from "../store/actons/productActions";
+import { useNavigate, useParams } from "react-router-dom";
+import { fetchProductDetails } from "../store/actions/productActions";
+import { addCartItem } from "../store/actions/cartActions";
 import AllProduct from "./AllProduct";
 
 function ProdectDetails() {
   const dispatch = useDispatch();
+  const navigate = useNavigate();
   const { id } = useParams();
   const { product, loading, error } = useSelector((s) => s.productDetails);
+  const { isAuthenticated } = useSelector((s) => s.user || {});
   const [mainImage, setMainImage] = useState(null);
 
   useEffect(() => {
@@ -36,6 +39,20 @@ function ProdectDetails() {
     );
 
   if (!product) return null;
+
+  const handleAddToCart = async () => {
+    if (!isAuthenticated) {
+      navigate("/login");
+      return;
+    }
+    try {
+      await dispatch(addCartItem({ productId: id, quantity: 1 })).unwrap();
+      navigate("/user/add-to-card");
+    } catch (err) {
+      console.error("Failed to add to cart", err);
+      alert(err?.message || "Failed to add to cart");
+    }
+  };
 
   return (
     <div className="min-h-screen bg-[#0f1f1f] p-6 flex justify-center items-center flex-col gap-8 text-white">
@@ -90,7 +107,10 @@ function ProdectDetails() {
             </div>
 
             <div className="mt-6 flex gap-4">
-              <button className="flex-1 bg-green-600 text-white py-3 rounded-xl hover:bg-green-700 transition shadow">
+              <button
+                onClick={handleAddToCart}
+                className="flex-1 bg-green-600 text-white py-3 rounded-xl hover:bg-green-700 transition shadow"
+              >
                 Add to Cart
               </button>
               <button className="flex-1 bg-[#0b0b0b] text-white border border-gray-700 py-3 rounded-xl hover:bg-gray-800 transition">

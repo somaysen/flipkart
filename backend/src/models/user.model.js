@@ -25,8 +25,8 @@ const userSchema = new mongoose.Schema(
     mobile: {
       type: Number, 
       required: true,
-      maxlength: 10,
-      minlength: 10,
+      maxLength: 10,
+      minLength: 10,
     },
      isAdmin: {
       type: Boolean,
@@ -37,50 +37,14 @@ const userSchema = new mongoose.Schema(
       ref:"seller",
       default: null,
     },
-    cart: [
-      {
-        product: {
-          type: mongoose.Schema.Types.ObjectId,
-          ref: "Product",
-          required: true,
-        },
-        quantity: {
-          type: Number,
-          required: true,
-          min: 1,
-          default: 1,
-        },
-        price: {
-          amount: { type: Number, required: true },
-          currency: { type: String, enum: ["INR", "USD", "EUR"], default: "INR" },
-        },
-        total: { type: Number, required: true },
-      },{timestamps:true},
-    ],
+    cart: {
+      type:mongoose.Schema.Types.ObjectId,
+      ref:"AddToCard",
+    },
+
     orders: {
-      type: Array,
-      default: [
-        {
-          product: {
-            type: mongoose.Schema.Types.ObjectId,
-            ref: "Product",
-          },
-          quantity: {
-            type: Number,
-          },
-          price: {
-            type: Number,
-          },
-          total: {
-            type: Number,
-          },
-          status: {
-            type: String,
-            enum: ["pending", "confirmed", "shipped", "delivered", "cancelled"],
-            default: "pending",
-          },
-        },{timestamps:true},
-      ],
+      type:mongoose.Schema.Types.ObjectId,
+      ref:"Oder"
     },
   },
   { timestamps: true } 

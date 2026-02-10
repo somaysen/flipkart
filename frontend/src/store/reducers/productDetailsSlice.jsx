@@ -1,5 +1,5 @@
 import { createSlice } from "@reduxjs/toolkit";
-import { fetchProductDetails } from "../actons/productActions";
+import { fetchProductDetails } from "../actions/productActions";
 
 const productDetailsSlice = createSlice({
   name: "productDetails",
@@ -12,6 +12,9 @@ const productDetailsSlice = createSlice({
     clearProductDetails: (state) => {
       state.product = null;
       state.loading = false;
+      state.error = null;
+    },
+    clearProductDetailsError: (state) => {
       state.error = null;
     },
   },
@@ -32,7 +35,7 @@ const productDetailsSlice = createSlice({
   },
 });
 
-export const { clearProductDetails } = productDetailsSlice.actions;
+export const { clearProductDetails, clearProductDetailsError } = productDetailsSlice.actions;
 export default productDetailsSlice.reducer;
 
 

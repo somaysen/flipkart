@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
-import { requestEmailChangeOtp, verifyEmailChangeOtp, changeEmail } from "../store/actons/userActions";
+import { requestEmailChangeOtp, verifyEmailChangeOtp, changeEmail } from "../store/actions/userActions";
 
 function EmailChange() {
   const dispatch = useDispatch();

@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import { useForm } from "react-hook-form";
 import { Link, useNavigate } from "react-router-dom";
 import { useDispatch } from "react-redux";
-import { registerUser } from "../store/actons/userActions";
+import { registerUser } from "../store/actions/userActions";
 import { Mail, Lock, User, Phone } from "lucide-react";
 
 function Register() {

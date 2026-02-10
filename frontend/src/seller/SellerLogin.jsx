@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { useDispatch, useSelector } from "react-redux";
-import { loginSeller } from "../store/actons/sellerAction";
+import { loginSeller } from "../store/actions/sellerAction";
 import { Link, useNavigate } from "react-router-dom";
 
 function SellerLogin() {

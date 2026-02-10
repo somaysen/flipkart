@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { useDispatch } from "react-redux";
 import { useNavigate, useParams } from "react-router-dom";
-import { updateSellerProduct } from "../store/actons/productActions";
+import { updateSellerProduct } from "../store/actions/productActions";
 
 function UpdateProduct({ productData }) {
   // Example: productData can be passed from parent or fetched via useEffect

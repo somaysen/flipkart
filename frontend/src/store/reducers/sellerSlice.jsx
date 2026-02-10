@@ -1,6 +1,6 @@
 // src/store/slices/sellerSlice.js
 import { createSlice } from "@reduxjs/toolkit";
-import { loginSeller, registerSeller, verifySellerSession } from "../actons/sellerAction";
+import { loginSeller, registerSeller, verifySellerSession } from "../actions/sellerAction";
 
 const initialState = {
   seller: null,
@@ -61,7 +61,7 @@ const sellerSlice = createSlice({
           state.isVerified = true;
         }
       })
-      .addCase(verifySellerSession.rejected, (state, action) => {
+      .addCase(verifySellerSession.rejected, (state) => {
         state.loading = false;
         state.seller = null;
         state.token = null;

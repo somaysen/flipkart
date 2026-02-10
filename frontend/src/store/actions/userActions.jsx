@@ -9,7 +9,8 @@ export const loginUser = createAsyncThunk(
       const response = await api.post("/user/login", userData);
       return response.data;   // backend ka data return
     } catch (error) {
-      return rejectWithValue(error.response.data);
+      const payload = error.response?.data || { message: error.message || "Login failed" };
+      return rejectWithValue(payload);
     }
   }
 );
@@ -22,7 +23,8 @@ export const registerUser = createAsyncThunk(
       const response = await api.post("/user/register", userData);
       return response.data;
     } catch (error) {
-      return rejectWithValue(error.response.data);
+      const payload = error.response?.data || { message: error.message || "Register failed" };
+      return rejectWithValue(payload);
     }
   }
 );

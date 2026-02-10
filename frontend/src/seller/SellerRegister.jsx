@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
-import { registerSeller } from "../store/actons/sellerAction";
+import { registerSeller } from "../store/actions/sellerAction";
 import { Link } from "react-router-dom";
 
 function SellerRegister() {

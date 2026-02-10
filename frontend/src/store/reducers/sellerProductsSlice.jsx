@@ -4,8 +4,8 @@ import {
   fetchSellerProducts,
   createSellerProduct,
   updateSellerProduct,
-} from "../actons/productActions";
-import { fetchSellerProductsById } from "../actons/sellerAction";
+} from "../actions/productActions";
+import { fetchSellerProductsById } from "../actions/sellerAction";
 
 const sellerProductsSlice = createSlice({
   name: "sellerProducts",
@@ -17,6 +17,9 @@ const sellerProductsSlice = createSlice({
   reducers: {
     clearSellerProducts: (state) => {
       state.products = [];
+      state.error = null;
+    },
+    clearSellerProductsError: (state) => {
       state.error = null;
     },
   },
@@ -55,6 +58,7 @@ const sellerProductsSlice = createSlice({
       // Create product
       .addCase(createSellerProduct.pending, (state) => {
         state.loading = true;
+        state.error = null;
       })
       .addCase(createSellerProduct.fulfilled, (state, action) => {
         state.loading = false;
@@ -68,6 +72,7 @@ const sellerProductsSlice = createSlice({
       // Update product
       .addCase(updateSellerProduct.pending, (state) => {
         state.loading = true;
+        state.error = null;
       })
       .addCase(updateSellerProduct.fulfilled, (state, action) => {
         state.loading = false;
@@ -83,5 +88,5 @@ const sellerProductsSlice = createSlice({
   },
 });
 
-export const { clearSellerProducts } = sellerProductsSlice.actions;
+export const { clearSellerProducts, clearSellerProductsError } = sellerProductsSlice.actions;
 export default sellerProductsSlice.reducer;

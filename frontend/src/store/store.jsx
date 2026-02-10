@@ -4,6 +4,7 @@ import productReducer from "./reducers/productSlice";
 import sellerReducer from "./reducers/sellerSlice"
 import sellerProductsReducer from "../store/reducers/sellerProductsSlice"
 import productDetailsReducer from "../store/reducers/productDetailsSlice"
+import cartReducer from "./reducers/cartSlice";
 
 const store = configureStore({
     reducer: {
@@ -12,6 +13,7 @@ const store = configureStore({
         seller: sellerReducer,
         sellerProducts: sellerProductsReducer, // ✅ added new slice
         productDetails: productDetailsReducer,
+        cart: cartReducer,
 
     }
 });
