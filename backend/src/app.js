@@ -10,12 +10,16 @@ import addToCardRouters from "./routes/addToCard.route.js";
 const app = express();
 app.use(express.json());
 app.use(cookieParser());
-// allow credentials (cookies) from frontend dev server
+
+// CORS Configuration for both development and production
 const allowedOrigins = [
 	process.env.FRONTEND_URL,
+	process.env.BACKEND_URL,
 	"http://localhost:3000",
 	"http://localhost:5173",
 	"http://127.0.0.1:5173",
+	"http://localhost:3001",
+	"https://flipkart-n0vl.onrender.com",
 ].filter(Boolean);
 
 app.use(
@@ -24,9 +28,15 @@ app.use(
 			// allow requests with no origin (like mobile apps or curl)
 			if (!origin) return callback(null, true);
 			if (allowedOrigins.includes(origin)) return callback(null, true);
-			return callback(new Error("Not allowed by CORS"), false);
+			// Allow in production if backend environment says so
+			if (process.env.NODE_ENV === 'production') {
+				return callback(null, true);
+			}
+			return callback(new Error(`CORS: Origin ${origin} not allowed`), false);
 		},
 		credentials: true,
+		methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
+		allowedHeaders: ['Content-Type', 'Authorization'],
 	})
 );
 

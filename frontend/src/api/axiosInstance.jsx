@@ -1,33 +1,43 @@
 import axios from "axios";
 
-const apiBaseURL = (() => {
-    const envUrl = import.meta.env.VITE_API_URL;
-    if (envUrl && typeof envUrl === "string") {
-        return envUrl.replace(/\/$/, ""); // trim trailing slash if present
-    }
-    // Fallback to current origin so production does not call localhost
-    return `${window.location.origin}/api`;
-})();
+// Determine base URL - prioritize VITE_API_URL environment variable
+let apiBaseURL;
+
+if (import.meta.env.VITE_API_URL) {
+    apiBaseURL = import.meta.env.VITE_API_URL;
+} else if (import.meta.env.PROD) {
+    // Production: use backend service URL
+    apiBaseURL = "https://flipkart-n0vl.onrender.com/api";
+} else {
+    // Development: use localhost
+    apiBaseURL = "http://localhost:3000/api";
+}
+
+// Remove trailing slash
+apiBaseURL = apiBaseURL.replace(/\/$/, "");
+
+console.log("[API Config] Base URL:", apiBaseURL, "| Prod:", import.meta.env.PROD);
 
 const api = axios.create({
     baseURL: apiBaseURL,
-    withCredentials: true, // include cookies on cross-site requests so backend can read cookie token
+    withCredentials: true,
+    timeout: 15000,
 });
 
 api.interceptors.request.use((config) => {
-    // Do not attach Authorization header from localStorage.
-    // Authentication is handled by httpOnly cookies (withCredentials: true).
     return config;
-},(error) => Promise.reject(error));
+}, (error) => Promise.reject(error));
 
-// Handle response errors globally
 api.interceptors.response.use(
   (response) => response,
   (error) => {
-    // Handle 401 Unauthorized globally
+    // Handle specific errors
     if (error.response?.status === 401) {
-      // User session expired, redirect to login
       window.location.href = '/login';
+    } else if (error.code === 'ECONNABORTED' || error.message === 'timeout of 15000ms exceeded') {
+      console.error("[API Error] Request timeout");
+    } else if (error.code === 'ERR_NETWORK') {
+      console.error("[API Error] Network error - check backend URL or CORS");
     }
     return Promise.reject(error);
   }
