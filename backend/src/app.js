@@ -16,14 +16,24 @@ app.use(cookieParser());
 const normalizeUrl = (url) =>
 	typeof url === "string" ? url.replace(/\/$/, "") : url;
 
+// Accept a comma-separated ALLOWED_ORIGINS env for flexible deployment (Netlify, Vercel, etc.)
+const envOrigins =
+	(process.env.ALLOWED_ORIGINS || "")
+		.split(",")
+		.map((o) => normalizeUrl(o.trim()))
+		.filter(Boolean);
+
 const allowedOrigins = [
 	normalizeUrl(process.env.FRONTEND_URL),
 	normalizeUrl(process.env.BACKEND_URL),
+	"https://mbshopingapp.netlify.app",
+	"https://flipkart-zeta-one.vercel.app",
 	"http://localhost:3000",
 	"http://localhost:5173",
 	"http://127.0.0.1:5173",
 	"http://localhost:3001",
 	"https://flipkart-n0vl.onrender.com",
+	...envOrigins,
 ].filter(Boolean);
 
 app.use(
