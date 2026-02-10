@@ -1,7 +1,4 @@
-import { useEffect } from "react";
-import { useDispatch, useSelector } from "react-redux";
 import HomeCardEffect from "../effects/HomeCardEffect";
-import { fetchProducts } from "../store/actons/productActions";
 import AllProduct from "../products/AllProduct";
 
 function Home() {

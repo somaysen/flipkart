@@ -29,8 +29,8 @@ function HomeCardEffect() {
     }, 3000);
 
     return () => clearInterval(interval);
-  }, []); // ✅ Fixed Dependency
-
+  }); 
+  
   return (
     <div className="relative w-full h-[35%] overflow-hidden">
 

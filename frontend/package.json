@@ -24,7 +24,6 @@
     "react-redux": "^9.2.0",
     "react-router": "^7.9.4",
     "react-router-dom": "^7.9.5",
-    "redux-toolkit": "^1.1.2",
     "regenerator-runtime": "^0.14.1",
     "tailwindcss": "^4.1.14"
   },
