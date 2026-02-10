@@ -11,7 +11,7 @@ import {
 } from "react-icons/fi";
 import BecomeSellerButton from "./BecomeSellerButton";
 
-function NavbarActions({ isMobile = false, closeMenu }) {
+function NavbarActions({ isMobile = false, closeMenu = () => {} }) {
   const navigate = useNavigate();
   const { isAuthenticated, user } = useSelector((s) => s.user || {});
   const { isAuthenticated: isSellerAuthenticated } = useSelector((s) => s.seller || {});
@@ -81,6 +81,7 @@ function NavbarActions({ isMobile = false, closeMenu }) {
                         <button
                           onClick={() => {
                             navigate("/logout");
+                            closeMenu();
                             setSettingsOpen(false);
                             setProfileOpen(false);
                           }}
@@ -92,6 +93,7 @@ function NavbarActions({ isMobile = false, closeMenu }) {
                         <button
                           onClick={() => {
                             navigate("/user/changed/email");
+                            closeMenu();
                             setSettingsOpen(false);
                             setProfileOpen(false);
                           }}
@@ -118,21 +120,30 @@ function NavbarActions({ isMobile = false, closeMenu }) {
                 {/* Actions */}
                 <div className="mt-4 grid grid-cols-2 gap-2">
                   <button
-                    onClick={() => navigate("/user/add-to-card")}
+                    onClick={() => {
+                      navigate("/user/add-to-card");
+                      closeMenu();
+                    }}
                     className="flex items-center justify-center gap-1 px-2 py-2 rounded-lg border text-sm hover:bg-gray-50 transition"
                   >
                     <FiShoppingCart /> Cart
                   </button>
 
                   <button
-                    onClick={() => navigate(isSellerAuthenticated ? "/seller/dashboard" : "/seller/login")}
+                    onClick={() => {
+                      navigate(isSellerAuthenticated ? "/seller/dashboard" : "/seller/login");
+                      closeMenu();
+                    }}
                     className="flex items-center justify-center gap-1 px-2 py-2 rounded-lg bg-indigo-600 text-white text-sm hover:bg-indigo-700 transition"
                   >
                     <FiUserPlus /> Seller
                   </button>
 
                   <button
-                    onClick={() => navigate("/user/profile")}
+                    onClick={() => {
+                      navigate("/user/profile");
+                      closeMenu();
+                    }}
                     className="col-span-2 flex items-center justify-center gap-1 px-2 py-2 rounded-lg border text-sm hover:bg-gray-50 transition"
                   >
                     <FiUser /> Open Profile

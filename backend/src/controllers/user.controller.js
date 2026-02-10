@@ -6,7 +6,6 @@ import resetPassTemplate from "../utils/email.template.js";
 import crypto from "crypto";
 
 class UserController {
-  /* ================= REGISTER ================= */
   register = async (req, res) => {
     try {
       const { name, email, password, mobile } = req.body;
@@ -50,7 +49,6 @@ class UserController {
     }
   };
 
-  /* ================= LOGIN ================= */
   login = async (req, res) => {
     try {
       const { email, password } = req.body;
@@ -92,7 +90,6 @@ class UserController {
     }
   };
 
-  /* ================= LOGOUT ================= */
   logout = async (req, res) => {
     try {
       const token = req.cookies?.token;
@@ -110,7 +107,6 @@ class UserController {
     }
   };
 
-  /* ================= FORGET PASSWORD ================= */
   forgetPassword = async (req, res) => {
     try {
       const { email } = req.body;
@@ -132,7 +128,6 @@ class UserController {
         .update(resetToken)
         .digest("hex");
 
-      // Save token & expiry
       user.resetPasswordToken = hashedToken;
       user.resetPasswordExpire = Date.now() + 10 * 60 * 1000;
 
@@ -153,7 +148,6 @@ class UserController {
     }
   };
 
-  /* ================= RESET PASSWORD ================= */
   resetPassword = async (req, res) => {
     try {
       const { token, newPassword } = req.body;
