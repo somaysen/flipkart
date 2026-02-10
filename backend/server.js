@@ -4,8 +4,6 @@ const connectDB = require('./src/db/db')
 const cacheInstance = require("./src/services/cache.service")
 const path = require("path");
 const express = require("express")
-const cors = require('cors')
-
 
 app.set("view engine", "ejs");
 app.set("views", path.join(__dirname, "src/views"));
