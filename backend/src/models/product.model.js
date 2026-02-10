@@ -19,7 +19,7 @@ const productSchema = new mongoose.Schema(
       },
       currency: {
         type: String,
-        enum: ["INR", "DOLLAR"], // ✅ Fixed enum
+        enum: ["INR", "USD", "EUR"],
         default: "INR",
       },
     },

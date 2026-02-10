@@ -52,7 +52,7 @@ const userSchema = new mongoose.Schema(
         },
         price: {
           amount: { type: Number, required: true },
-          currency: { type: String, enum: ["INR", "DOLLAR"], default: "INR" },
+          currency: { type: String, enum: ["INR", "USD", "EUR"], default: "INR" },
         },
         total: { type: Number, required: true },
       },{timestamps:true},

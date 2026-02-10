@@ -20,8 +20,7 @@ cacheInstance.on("connect", () => {
 
 cacheInstance.on("error", (error) => {
   console.log("Error connecting redis", error);
-});0
-
+});
 
 const PORT = process.env.PORT || 3000;
 
