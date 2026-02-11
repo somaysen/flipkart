@@ -9,16 +9,19 @@ class UserController {
   // Helper method for cookie configuration
   getCookieConfig = () => {
     const isProduction = process.env.NODE_ENV === "production";
-    
+    const cookieDomain =
+      process.env.COOKIE_DOMAIN ||
+      (process.env.FRONTEND_URL
+        ? new URL(process.env.FRONTEND_URL).hostname
+        : undefined);
+
     return {
       httpOnly: true,
       maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
       secure: isProduction, // HTTPS only in production
       sameSite: isProduction ? "none" : "lax", // Adjust for cross-site in production
       path: "/",
-      ...(isProduction && process.env.FRONTEND_URL && { 
-        domain: process.env.FRONTEND_URL 
-      })
+      ...(isProduction && cookieDomain && { domain: cookieDomain }),
     };
   };
 

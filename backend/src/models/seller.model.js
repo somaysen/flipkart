@@ -60,9 +60,13 @@ sellerSchema.methods.comparePass = async function (password) {
 
 // 🎫 Generate JWT token
 sellerSchema.methods.generateToken = function (expiresIn = "1d") {
+  const secret =
+    process.env.JWT_SECRET_SELLER ||
+    process.env.JWT_SECRET_seller ||
+    process.env.JWT_SECRET;
   return jwt.sign(
     { id: this._id, email: this.email },
-    process.env.JWT_SECRET_SELLER,
+    secret,
     { expiresIn }
   );
 };

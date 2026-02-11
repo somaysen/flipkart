@@ -12,17 +12,24 @@ export const addToCart = async (req, res) => {
     const product = await ProductModel.findById(productId);
     if (!product) return res.status(404).json({ message: "Product not found" });
 
+    const priceAmount = Number(product.price?.amount ?? product.price ?? 0);
+    const priceCurrency = product.price?.currency || "INR";
+    if (Number.isNaN(priceAmount) || priceAmount <= 0) {
+      return res.status(400).json({ message: "Product price unavailable" });
+    }
+
     // try find existing cart item for this user+product
     let cartItem = await AddToCardModel.findOne({ user: user._id, product: productId });
     if (cartItem) {
       cartItem.quantity = (cartItem.quantity || 0) + Number(quantity);
-      cartItem.total = cartItem.quantity * (product.price || 0);
+      cartItem.price = { amount: priceAmount, currency: priceCurrency };
+      cartItem.total = cartItem.quantity * priceAmount;
       await cartItem.save();
       return res.status(200).json(cartItem);
     }
 
-    const priceObj = { amount: product.price || 0, currency: product.currency || "INR" };
-    const total = Number(quantity) * (priceObj.amount || 0);
+    const priceObj = { amount: priceAmount, currency: priceCurrency };
+    const total = Number(quantity) * priceAmount;
 
     cartItem = new AddToCardModel({ user: user._id, product: productId, quantity, price: priceObj, total });
     await cartItem.save();
@@ -59,7 +66,15 @@ export const updateCartItem = async (req, res) => {
     if (String(item.user) !== String(user._id)) return res.status(403).json({ message: "Not allowed" });
 
     item.quantity = Number(quantity);
-    item.total = item.quantity * (item.product.price || 0);
+    const priceAmount = Number(item.product?.price?.amount ?? item.product?.price ?? 0);
+    if (Number.isNaN(priceAmount) || priceAmount <= 0) {
+      return res.status(400).json({ message: "Product price unavailable" });
+    }
+    item.price = {
+      amount: priceAmount,
+      currency: item.product?.price?.currency || "INR",
+    };
+    item.total = item.quantity * priceAmount;
     await item.save();
     return res.status(200).json(item);
   } catch (error) {

@@ -8,6 +8,8 @@ import addToCardRouters from "./routes/addToCard.route.js";
 
 
 const app = express();
+// ensure secure cookies / proxies behave correctly in production
+app.set("trust proxy", 1);
 app.use(express.json());
 app.use(cookieParser());
 

@@ -29,7 +29,11 @@ const sellerAuth = async (req, res, next) => {
     // console.log(isBlacklisted);
 
     // Verify token using SAME secret
-    const decoded = jwt.verify(token, process.env.JWT_SECRET_SELLER);
+    const secret =
+      process.env.JWT_SECRET_SELLER ||
+      process.env.JWT_SECRET_seller ||
+      process.env.JWT_SECRET;
+    const decoded = jwt.verify(token, secret);
     if(!decoded) {
       return res.status(401).json({ message: "Invalid token" });
     }

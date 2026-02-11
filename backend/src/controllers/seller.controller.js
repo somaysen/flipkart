@@ -2,6 +2,24 @@ import productModel from "../models/product.model.js"; // import your Product mo
 import sellerModel from "../models/seller.model.js";
 
 class SellerController {
+  getCookieConfig = () => {
+    const isProduction = process.env.NODE_ENV === "production";
+    const cookieDomain =
+      process.env.COOKIE_DOMAIN ||
+      (process.env.FRONTEND_URL
+        ? new URL(process.env.FRONTEND_URL).hostname
+        : undefined);
+
+    return {
+      httpOnly: true,
+      secure: isProduction,
+      sameSite: isProduction ? "none" : "lax",
+      maxAge: 7 * 24 * 60 * 60 * 1000,
+      path: "/",
+      ...(isProduction && cookieDomain && { domain: cookieDomain }),
+    };
+  };
+
   register = async (req, res) => {
     try {
       const { name, email, password, phone, address, contactName } = req.body;
@@ -28,12 +46,7 @@ class SellerController {
 
       const token = seller.generateToken("7d");
 
-      res.cookie("sellerToken", token, {
-        httpOnly: true,
-        // secure: process.env.NODE_ENV === "production",
-        // sameSite: process.env.NODE_ENV === "production" ? "none" : "lax",
-        maxAge: 7 * 24 * 60 * 60 * 1000,
-      });
+      res.cookie("sellerToken", token, this.getCookieConfig());
 
       res.status(201).json({
         message: "Food partner registered successfully",
@@ -73,12 +86,7 @@ class SellerController {
 
       const token = seller.generateToken("7d");
 
-      res.cookie("sellerToken", token, {
-        httpOnly: true,
-        // secure: process.env.NODE_ENV === "production",
-        // sameSite: process.env.NODE_ENV === "production" ? "none" : "lax",
-        maxAge: 7 * 24 * 60 * 60 * 1000,
-      });
+      res.cookie("sellerToken", token, this.getCookieConfig());
 
       return res.status(200).json({
         message: "Seller logged in successfully",
@@ -99,13 +107,9 @@ class SellerController {
   };
 
   logout = (req, res) => {
-    res.clearCookie("sellerToken", {
-      httpOnly: true,
-      secure: process.env.NODE_ENV === "production",
-      sameSite: process.env.NODE_ENV === "production" ? "none" : "lax",
-      path: "/",
-    });
-    res.clearCookie("token", { path: "/" });
+    const baseConfig = this.getCookieConfig();
+    res.clearCookie("sellerToken", baseConfig);
+    res.clearCookie("token", { ...baseConfig, path: "/" });
     return res.status(200).json({ message: "Logout successful" });
   };
 
