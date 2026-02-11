@@ -37,15 +37,23 @@ const userSchema = new mongoose.Schema(
       ref:"seller",
       default: null,
     },
-    cart: {
-      type:mongoose.Schema.Types.ObjectId,
-      ref:"AddToCard",
-    },
+    // store cart line items directly on the user to simplify addToCart logic
+    cart: [
+      {
+        product: { type: mongoose.Schema.Types.ObjectId, ref: "Product", required: true },
+        quantity: { type: Number, required: true, default: 1, min: 1 },
+        price: { type: Number, required: true }, // snapshot of price at time of adding
+        total: { type: Number, required: true },
+      },
+    ],
 
-    orders: {
-      type:mongoose.Schema.Types.ObjectId,
-      ref:"Oder"
-    },
+    // allow users to have multiple orders
+    orders: [
+      {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "Order",
+      },
+    ],
     resetPasswordToken: {
       type: String,
       select: false,

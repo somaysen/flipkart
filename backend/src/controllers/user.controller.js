@@ -6,6 +6,22 @@ import resetPassTemplate from "../utils/email.template.js";
 import crypto from "crypto";
 
 class UserController {
+  // Helper method for cookie configuration
+  getCookieConfig = () => {
+    const isProduction = process.env.NODE_ENV === "production";
+    
+    return {
+      httpOnly: true,
+      maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
+      secure: isProduction, // HTTPS only in production
+      sameSite: isProduction ? "none" : "lax", // Adjust for cross-site in production
+      path: "/",
+      ...(isProduction && process.env.FRONTEND_URL && { 
+        domain: process.env.FRONTEND_URL 
+      })
+    };
+  };
+
   register = async (req, res) => {
     try {
       const { name, email, password, mobile } = req.body;
@@ -28,10 +44,8 @@ class UserController {
 
       const token = user.generateToken();
 
-      res.cookie("token", token, {
-        httpOnly: true,
-        maxAge: 7 * 24 * 60 * 60 * 1000,
-      });
+      // Use proper cookie config
+      res.cookie("token", token, this.getCookieConfig());
 
       return res.status(201).json({
         message: "User registered successfully",
@@ -69,10 +83,8 @@ class UserController {
 
       const token = user.generateToken();
 
-      res.cookie("token", token, {
-        httpOnly: true,
-        maxAge: 7 * 24 * 60 * 60 * 1000,
-      });
+      // Use proper cookie config
+      res.cookie("token", token, this.getCookieConfig());
 
       res.status(200).json({
         message: "Login successful",
@@ -98,7 +110,16 @@ class UserController {
         await cacheInstance.set(token, "blacklisted");
       }
 
-      res.clearCookie("token", { httpOnly: true, path: "/" });
+      // Clear cookie with same config used for setting
+      res.clearCookie("token", {
+        httpOnly: true,
+        secure: process.env.NODE_ENV === "production",
+        sameSite: process.env.NODE_ENV === "production" ? "none" : "lax",
+        path: "/",
+        ...(process.env.NODE_ENV === "production" && process.env.DOMAIN_NAME && { 
+          domain: process.env.DOMAIN_NAME 
+        })
+      });
 
       res.status(200).json({ message: "Logged out successfully" });
     } catch (error) {
@@ -107,6 +128,7 @@ class UserController {
     }
   };
 
+  // ... rest of your methods remain the same
   forgetPassword = async (req, res) => {
     try {
       const { email } = req.body;
@@ -285,7 +307,17 @@ class UserController {
         return res.status(401).json({ message: "Unauthorized" });
       }
 
-      const price = product.price?.amount || product.amount;
+      // normalize price to a number so it matches the cart schema
+      const price =
+        typeof product.price === "object"
+          ? product.price?.amount
+          : product.price ?? product.amount;
+
+      if (Number.isNaN(Number(price)) || price == null) {
+        return res
+          .status(400)
+          .json({ message: "Product price unavailable, cannot add to cart" });
+      }
 
       const item = user.cart.find(
         (i) => i.product.toString() === productId
@@ -298,7 +330,7 @@ class UserController {
         user.cart.push({
           product: productId,
           quantity,
-          price: product.price,
+          price,
           total: quantity * price,
         });
       }
